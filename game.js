@@ -1,12 +1,5 @@
 const doctorNames = ["Dr. Johnson", "Dr. Lee", "Dr. Patel", "Dr. Nguyen", "Dr. Garcia", "Dr. Wang", "Dr. Hernandez", "Dr. Smith", "Dr. Kim", "Dr. Jones"];
 const nurseNames = ["Nurse Brown", "Nurse Davis", "Nurse Martinez", "Nurse Wilson", "Nurse Anderson", "Nurse Thomas", "Nurse Jackson", "Nurse White", "Nurse Harris", "Nurse Martin"];
-const Locations = {
-	OFFICE: 'office',
-	STREET: 'street',
-	HR: 'hr',
-	ADMINISTRATION: 'administration',
-	REALTOR: 'realtor'
-};
 class Employee {
 	constructor(name, age, experience, education, salary) {
 		this.name = name;
@@ -39,11 +32,15 @@ class Nurse extends Employee {
 		this.hips = hips;
 	}
 }
+class Storeman extends Employee {
+	constructor(name, age, experience, education, salary) {
+		super(name, age, experience, education, salary);
+	}
+}
 class ResourceManager {
     constructor() {
         this.images = {};
     }
-
     loadImage(path) {
         if (!this.images[path]) {
             const image = new Image();
@@ -181,50 +178,22 @@ class Office extends Location {
 		super("Офис");
 		this.image = image;
 		this.pauseImage = pauseImage;
-		this.interactObjects = {
-			WINDOW: 'window',
-			HR: 'hr',
-			ADMIN: 'administration',
-			REALTOR: 'realtor',
-			PAUSE: 'pause'
-		};
-		this.windowCoors = this.setObjectsCoors(this.interactObjects.WINDOW);
-		this.hrDoorCoors = this.setObjectsCoors(this.interactObjects.HR);
-		this.adminDoorCoors = this.setObjectsCoors(this.interactObjects.ADMIN);
-		this.realtorDoorCoors = this.setObjectsCoors(this.interactObjects.REALTOR);
-		this.pauseBtnCoors = this.setObjectsCoors(this.interactObjects.PAUSE);
-	}
-	setObjectsCoors(obj) {
-		if ((this.image.width === 800 && this.image.height === 600)
-			|| (this.image.width === 1024 && this.image.height === 600)) {
-			switch (obj) {
-				case this.interactObjects.WINDOW:
-					return this.setWindowCoors();
-				case this.interactObjects.HR:
-					return this.setHRCoors();
-				case this.interactObjects.ADMIN:
-					return this.setAdminCoors();
-				case this.interactObjects.REALTOR:
-					return this.setRealtorCoors();
-				case this.interactObjects.PAUSE:
-					return this.setPauseCoors();
-				default:
-					console.error(`${this.name}: cannot set coordinates for unknown object '${obj}'!`);
-					return {x1: 0, x2: 0, y1: 0, y2: 0};
-			}
-		}
-		else {
-			console.error(`${this.name}: incorrect image size! Cannot set coordinates for object '${obj}'!`);
-			return {x1: 0, x2: 0, y1: 0, y2: 0};
-		}
+		this.image.onload = () => {
+            this.windowCoors = this.setWindowCoors();
+            this.hrDoorCoors = this.setHRCoors();
+            this.adminDoorCoors = this.setAdminCoors();
+            this.realtorDoorCoors = this.setRealtorCoors();
+            this.pauseBtnCoors = this.setPauseCoors();
+        };
 	}
 	setWindowCoors() {
 		if (this.image.width === 800 && this.image.height === 600) {
-			this.windowCoors =  {x1: 5, x2: 170, y1: 60, y2: 245};
+			return {x1: 5, x2: 170, y1: 60, y2: 245};
 		} else if (this.image.width === 1024 && this.image.height === 600) {
-			this.windowCoors =  {x1: 7, x2: 220, y1: 55, y2: 250};
+			return {x1: 7, x2: 220, y1: 55, y2: 250};
 		} else {
-			this.windowCoors =  {x1: 0, x2: 0, y1: 0, y2: 0};
+			console.error(`${this.name} setWindowCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
 		}
 	}
 	setHRCoors() {
@@ -233,6 +202,7 @@ class Office extends Location {
 		} else if (this.image.width === 1024 && this.image.height === 600) {
 			return {x1: 898, x2: 1010, y1: 13, y2: 142};
 		} else {
+			console.error(`${this.name} setHRCoors: incorrect image size! Cannot set coordinates!`);
 			return {x1: 0, x2: 0, y1: 0, y2: 0};
 		}
 	}
@@ -242,6 +212,7 @@ class Office extends Location {
 		} else if (this.image.width === 1024 && this.image.height === 600) {
 			return {x1: 890, x2: 1013, y1: 190, y2: 300};
 		} else {
+			console.error(`${this.name} setAdminCoors: incorrect image size! Cannot set coordinates!`);
 			return {x1: 0, x2: 0, y1: 0, y2: 0};
 		}
 	}
@@ -251,6 +222,7 @@ class Office extends Location {
 		} else if (this.image.width === 1024 && this.image.height === 600) {
 			return {x1: 890, x2: 1005, y1: 348, y2: 453};
 		} else {
+			console.error(`${this.name} setRealtorCoors: incorrect image size! Cannot set coordinates!`);
 			return {x1: 0, x2: 0, y1: 0, y2: 0};
 		}
 	}
@@ -260,37 +232,292 @@ class Office extends Location {
 		} else if (this.image.width === 1024 && this.image.height === 600) {
 			return {x1: 560, x2: 655, y1: 170, y2: 275};
 		} else {
+			console.error(`${this.name} setPauseCoors: incorrect image size! Cannot set coordinates!`);
 			return {x1: 0, x2: 0, y1: 0, y2: 0};
 		}
 	}
 }
 class HR extends Location {
-	constructor(image) {
+	constructor(image, vacancyTypesImage) {
 		super("Отдел кадров");
 		this.image = image;
+		this.vacancyTypesImage = vacancyTypesImage;
+		this.image.onload = () => {
+			this.windowCoors = this.setWindowCoors();
+			this.officeDoorCoors = this.setOfficeCoors();
+			this.vacancyCoors = this.setVacancyCoors();
+        };
+		this.choiceVacancyType = false;
+		this.vacancyTypesImage.onload = () => {
+			this.nurseCoors = this.setNurseCoors();
+			this.storemanCoors = this.setStoremanCoors();
+			this.therapistCoors = this.setTherapistCoors();
+			this.dentistCoors = this.setDentistCoors();
+			this.psychiatristCoors = this.setPsychiatristCoors();
+			this.surgeonCoors = this.setSurgeonCoors();
+			this.pathologistCoors = this.setPathologistCoors();
+			this.cookCoors = this.setCookCoors();
+			this.driverCoors = this.setDriverCoors();
+			this.bouncerCoors = this.setBouncerCoors();
+			this.vacancyCancelCoors = this.setVacancyCancelCoors();
+        };
+	}
+	setWindowCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 10, x2: 178, y1: 20, y2: 115};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 15, x2: 230, y1: 20, y2: 120};
+		} else {
+			console.error(`${this.name} setWindowCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setOfficeCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 8, x2: 80, y1: 140, y2: 300};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 10, x2: 105, y1: 140, y2: 295};
+		} else {
+			console.error(`${this.name} setOfficeCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setVacancyCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 200, x2: 330, y1: 10, y2: 305};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 210, x2: 425, y1: 250, y2: 300};
+		} else {
+			console.error(`${this.name} setVacancyCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setNurseCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 210, x2: 335, y1: 20, y2: 100};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 210, x2: 345, y1: 20, y2: 110};
+		} else {
+			console.error(`${this.name} setNurseCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setStoremanCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 364, x2: 490, y1: 20, y2: 100};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 375, x2: 515, y1: 20, y2: 110};
+		} else {
+			console.error(`${this.name} setStoremanCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setTherapistCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 210, x2: 335, y1: 130, y2: 210};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 210, x2: 345, y1: 140, y2: 225};
+		} else {
+			console.error(`${this.name} setTherapistCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setDentistCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 364, x2: 490, y1: 130, y2: 210};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 375, x2: 515, y1: 140, y2: 230};
+		} else {
+			console.error(`${this.name} setDentistCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setPsychiatristCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 208, x2: 335, y1: 240, y2: 320};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		} else {
+			console.error(`${this.name} setPsychiatristCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setSurgeonCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 364, x2: 490, y1: 240, y2: 320};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		} else {
+			console.error(`${this.name} setSurgeonCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setPathologistCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 208, x2: 335, y1: 345, y2: 425};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		} else {
+			console.error(`${this.name} setPathologistCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setCookCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 364, x2: 490, y1: 345, y2: 425};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		} else {
+			console.error(`${this.name} setCookCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setDriverCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 208, x2: 335, y1: 454, y2: 535};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		} else {
+			console.error(`${this.name} setDriverCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setBouncerCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 364, x2: 490, y1: 454, y2: 535};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		} else {
+			console.error(`${this.name} setBouncerCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setVacancyCancelCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 520, x2: 580, y1: 480, y2: 530};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		} else {
+			console.error(`${this.name} setVacancyCancelCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
 	}
 }
 class Administration extends Location {
 	constructor(image) {
 		super("Администрация");
 		this.image = image;
+		this.image.onload = () => {
+			this.windowCoors = this.setWindowCoors();
+			this.officeDoorCoors = this.setOfficeCoors();
+        };
+	}
+	setWindowCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 130, x2: 290, y1: 15, y2: 90};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 165, x2: 375, y1: 15, y2: 95};
+		} else {
+			console.error(`${this.name} setWindowCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setOfficeCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 10, x2: 100, y1: 10, y2: 115};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 10, x2: 130, y1: 10, y2: 115};
+		} else {
+			console.error(`${this.name} setOfficeCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
 	}
 }
 class Realtor extends Location {
 	constructor(image) {
 		super("Риелтор");
 		this.image = image;
+		this.image.onload = () => {
+			this.windowCoors = this.setWindowCoors();
+			this.officeDoorCoors = this.setOfficeCoors();
+        };
+	}
+	setWindowCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 140, x2: 310, y1: 15, y2: 105};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 180, x2: 400, y1: 20, y2: 110};
+		} else {
+			console.error(`${this.name} setWindowCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setOfficeCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 10, x2: 120, y1: 10, y2: 150};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 15, x2: 155, y1: 10, y2: 150};
+		} else {
+			console.error(`${this.name} setOfficeCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
 	}
 }
 class Street extends Location {
 	constructor(image, office, hr, administration, realtor) {
 		super("Улица");
 		this.image = image;
+		this.image.onload = () => {
+			this.officeDoorCoors = this.setOfficeCoors();
+			this.hrDoorCoors = this.setHRCoors();
+			this.adminDoorCoors = this.setAdminCoors();
+			this.realtorDoorCoors = this.setRealtorCoors();
+        };
 		this.office = office;
 		this.hr = hr;
 		this.administration = administration;
 		this.realtor = realtor;
 		this.hospital = null;
+	}
+	setOfficeCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 35, x2: 180, y1: 60, y2: 158};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 47, x2: 235, y1: 60, y2: 160};
+		} else {
+			console.error(`${this.name} setOfficeCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setHRCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 35, x2: 189, y1: 185, y2: 279};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 44, x2: 240, y1: 188, y2: 278};
+		} else {
+			console.error(`${this.name} setHRCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setAdminCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 30, x2: 185, y1: 310, y2: 375};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 41, x2: 237, y1: 310, y2: 376};
+		} else {
+			console.error(`${this.name} setAdminCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
+	}
+	setRealtorCoors() {
+		if (this.image.width === 800 && this.image.height === 600) {
+			return {x1: 30, x2: 180, y1: 412, y2: 505};
+		} else if (this.image.width === 1024 && this.image.height === 600) {
+			return {x1: 30, x2: 235, y1: 410, y2: 500};
+		} else {
+			console.error(`${this.name} setRealtorCoors: incorrect image size! Cannot set coordinates!`);
+			return {x1: 0, x2: 0, y1: 0, y2: 0};
+		}
 	}
 }
 class Hospital extends Location {
@@ -534,8 +761,7 @@ class Player {
 		this.vacancies = [];
 		this.employees = [];
 		this.rentedRooms = [];
-		this.currentLocation = Locations.OFFICE;
-		//this.currentLocation = this.locations.find(loc => loc instanceof Office);
+		this.currentLocation = this.locations.find(loc => loc instanceof Office);
 		let limitsOfRentingRooms = {
 			maxReceptions: 1,
 			maxWaitingRooms: 5,
@@ -547,6 +773,9 @@ class Player {
 		this.maxReceptions = limitsOfRooms.maxReceptions;
 		this.maxWaitingRooms = limitsOfRooms.maxWaitingRooms;
 		this.maxTherapistOffices = limitsOfRooms.maxTherapistOffices;
+	}
+	goToLocation(newLocation) {
+		this.currentLocation = newLocation;
 	}
 	publishVacancy(employeeType, age, experience, education, salary) {
 		const vacancy = new Vacancy(employeeType, age, experience, education, salary);
@@ -607,7 +836,6 @@ class Game {
 		this.canvas = canvasElement;
 		this.ctx = this.canvas.getContext("2d");
 		this.imageFolder = imageFolder;
-        this.initializeStartImage();
 		this.fps = 60;
 		this.interval = 1000 / this.fps;
 		this.startTime = new Date(2000, 0, 1, 0, 0, 0);
@@ -621,7 +849,34 @@ class Game {
 		this.resourceManager = new ResourceManager();
 		this.canvas.addEventListener("click", (event) => this.handleCanvasClick(event));
 		window.addEventListener("keydown", (event) => this.handleKeyDown(event));
+        this.initializeStartImage();
 		requestAnimationFrame(this.loop.bind(this));
+	}
+	/*private*/ #privateMethod() {
+		//private method can be using only in this class, not accessable in child classes or anywhere
+		console.log('private method');
+	}
+	/*protected*/ _protectedMethod() {
+		//protected method can be using in this class and in child classes, but not accessable from anywhere
+		console.log('protected method');
+	}
+	/*public*/ publicMethod() {
+		//public method can be using in this class, in child classes, and from anywhere
+		console.log('public method');
+	}
+	/*getter*/ get field1() {
+		//getter method is public, uses to get value of any private property (variable)
+		return this.field1;
+	}
+	/*setter*/ set field1(value) {
+		//setter method is public, uses to set new value to any private property (variable)
+		this.field1 = value;
+	}
+	/*getter version2*/ getField1() {
+		return this.field1;
+	}
+	/*setter version2*/ setField1(value) {
+		this.field1 = value;
 	}
 	initializeStartImage() {
         const startImage = new Image();
@@ -633,7 +888,7 @@ class Game {
 			this.loadImages();
 			this.setPauseImageParams();
 			let office = new Office(this.officeImage, this.pauseImage);
-			let hr = new HR(this.hrImage);
+			let hr = new HR(this.hrImage, this.vacancyTypesImage);
 			let administration = new Administration(this.administationImage);
 			let realtor = new Realtor(this.realtorImage);
 			this.locations.push(office);
@@ -642,7 +897,6 @@ class Game {
 			this.locations.push(realtor);
 			this.locations.push(new Street(this.streetImage, office, hr, administration, realtor));
 			this.addPlayer(new Player('human1', this.locations));
-			console.log('player[0].currentLocation',this.players[0].currentLocation);
         };
     }
 	loadImages() {
@@ -652,6 +906,7 @@ class Game {
 		this.administationImage = this.resourceManager.loadImage(`./${this.imageFolder}/administation.jpg`);
 		this.realtorImage = this.resourceManager.loadImage(`./${this.imageFolder}/realtor.jpg`);
 		this.pauseImage = this.resourceManager.loadImage(`./${this.imageFolder}/paused.jpg`);
+		this.vacancyTypesImage = this.resourceManager.loadImage(`./${this.imageFolder}/vacancyChoice.jpg`);
 	}
 	setPauseImageParams() {
 		this.pauseImgX1 = this.canvas.width/2 - this.pauseImage.width/2;
@@ -660,8 +915,6 @@ class Game {
 		this.pauseImgY2 = this.pauseImgY1 + this.pauseImage.height;
 	}
 	handleCanvasClick(event) {
-		//TODO: when pictures will be ready it need to change x and y for every clicking places
-		//TODO: add key press to quick move
 		if (this.gameStarted) {
 			const x = event.clientX - this.canvas.getBoundingClientRect().left;
 			const y = event.clientY - this.canvas.getBoundingClientRect().top;
@@ -672,106 +925,88 @@ class Game {
 				}
 			} else {
 				let currentLocation = this.players[0].currentLocation;
-				switch (currentLocation) {
-					case Locations.OFFICE:
-						if (this.canvas.width === 800 && this.canvas.height === 600) {
-							if (x >= 440 && x <= 510 && y >= 170 && y <= 270) {
-								this.isPaused = true;
-							} else if (x >= 5 && x <= 170 && y >= 60 && y <= 245) {
-								currentLocation = Locations.STREET;
-							} else if (x >= 703 && x <= 785 && y >= 15 && y <= 145) {
-								currentLocation = Locations.HR;
-							} else if (x >= 695 && x <= 790 && y >= 193 && y <= 300) {
-								currentLocation = Locations.ADMINISTRATION;
-							} else if (x >= 694 && x <= 785 && y >= 348 && y <= 455) {
-								currentLocation = Locations.REALTOR;
-							}
-						} else if (this.canvas.width === 1024 && this.canvas.height === 600) {
-							if (x >= 560 && x <= 655 && y >= 170 && y <= 275) {
-								this.isPaused = true;
-							} else if (x >= 7 && x <= 220 && y >= 55 && y <= 250) {
-								currentLocation = Locations.STREET;
-							} else if (x >= 898 && x <= 1010 && y >= 13 && y <= 142) {
-								currentLocation = Locations.HR;
-							} else if (x >= 890 && x <= 1013 && y >= 190 && y <= 300) {
-								currentLocation = Locations.ADMINISTRATION;
-							} else if (x >= 890 && x <= 1005 && y >= 348 && y <= 453) {
-								currentLocation = Locations.REALTOR;
+				
+				switch (true) {
+					case currentLocation instanceof Office:
+						if (x >= currentLocation.pauseBtnCoors.x1 && x <= currentLocation.pauseBtnCoors.x2 && y >= currentLocation.pauseBtnCoors.y1 && y <= currentLocation.pauseBtnCoors.y2) {
+							this.isPaused = true;
+						} else {
+							if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
+								this.players[0].goToLocation(this.locations.find(loc => loc instanceof Street));
+							} else if (x >= currentLocation.hrDoorCoors.x1 && x <= currentLocation.hrDoorCoors.x2 && y >= currentLocation.hrDoorCoors.y1 && y <= currentLocation.hrDoorCoors.y2) {
+								this.players[0].goToLocation(this.locations.find(loc => loc instanceof HR));
+							} else if (x >= currentLocation.adminDoorCoors.x1 && x <= currentLocation.adminDoorCoors.x2 && y >= currentLocation.adminDoorCoors.y1 && y <= currentLocation.adminDoorCoors.y2) {
+								this.players[0].goToLocation(this.locations.find(loc => loc instanceof Administration));
+							} else if (x >= currentLocation.realtorDoorCoors.x1 && x <= currentLocation.realtorDoorCoors.x2 && y >= currentLocation.realtorDoorCoors.y1 && y <= currentLocation.realtorDoorCoors.y2) {
+								this.players[0].goToLocation(this.locations.find(loc => loc instanceof Realtor));
 							}
 						}
 						break;
-					case Locations.STREET:
-						if (this.canvas.width === 800 && this.canvas.height === 600) {
-							if (x >= 35 && x <= 180 && y >= 60 && y <= 158) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 35 && x <= 189 && y >= 185 && y <= 279) {
-								currentLocation = Locations.HR;
-							} else if (x >= 30 && x <= 185 && y >= 310 && y <= 375) {
-								currentLocation = Locations.ADMINISTRATION;
-							} else if (x >= 30 && x <= 180 && y >= 412 && y <= 505) {
-								currentLocation = Locations.REALTOR;
+					case currentLocation instanceof HR:
+						if (currentLocation.choiceVacancyType) {
+							if (x >= currentLocation.nurseCoors.x1 && x <= currentLocation.nurseCoors.x2 && y >= currentLocation.nurseCoors.y1 && y <= currentLocation.nurseCoors.y2) {
+								console.log('nurse vacancy');
+							} else if (x >= currentLocation.storemanCoors.x1 && x <= currentLocation.storemanCoors.x2 && y >= currentLocation.storemanCoors.y1 && y <= currentLocation.storemanCoors.y2) {
+								console.log('storeman vacancy');
+							} else if (x >= currentLocation.therapistCoors.x1 && x <= currentLocation.therapistCoors.x2 && y >= currentLocation.therapistCoors.y1 && y <= currentLocation.therapistCoors.y2) {
+								console.log('therapist vacancy');
+							} else if (x >= currentLocation.dentistCoors.x1 && x <= currentLocation.dentistCoors.x2 && y >= currentLocation.dentistCoors.y1 && y <= currentLocation.dentistCoors.y2) {
+								console.log('dentist vacancy');
+							} else if (x >= currentLocation.psychiatristCoors.x1 && x <= currentLocation.psychiatristCoors.x2 && y >= currentLocation.psychiatristCoors.y1 && y <= currentLocation.psychiatristCoors.y2) {
+								console.log('psychiatrist vacancy');
+							} else if (x >= currentLocation.surgeonCoors.x1 && x <= currentLocation.surgeonCoors.x2 && y >= currentLocation.surgeonCoors.y1 && y <= currentLocation.surgeonCoors.y2) {
+								console.log('surgeon vacancy');
+							} else if (x >= currentLocation.pathologistCoors.x1 && x <= currentLocation.pathologistCoors.x2 && y >= currentLocation.pathologistCoors.y1 && y <= currentLocation.pathologistCoors.y2) {
+								console.log('pathologist vacancy');
+							} else if (x >= currentLocation.cookCoors.x1 && x <= currentLocation.cookCoors.x2 && y >= currentLocation.cookCoors.y1 && y <= currentLocation.cookCoors.y2) {
+								console.log('cook vacancy');
+							} else if (x >= currentLocation.driverCoors.x1 && x <= currentLocation.driverCoors.x2 && y >= currentLocation.driverCoors.y1 && y <= currentLocation.driverCoors.y2) {
+								console.log('driver vacancy');
+							} else if (x >= currentLocation.bouncerCoors.x1 && x <= currentLocation.bouncerCoors.x2 && y >= currentLocation.bouncerCoors.y1 && y <= currentLocation.bouncerCoors.y2) {
+								console.log('bouncerCoors vacancy');
+							} else if (x >= currentLocation.vacancyCancelCoors.x1 && x <= currentLocation.vacancyCancelCoors.x2 && y >= currentLocation.vacancyCancelCoors.y1 && y <= currentLocation.vacancyCancelCoors.y2) {
+								currentLocation.choiceVacancyType = false;
 							}
-						} else if (this.canvas.width === 1024 && this.canvas.height === 600) {
-							if (x >= 47 && x <= 235 && y >= 60 && y <= 160) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 44 && x <= 240 && y >= 188 && y <= 278) {
-								currentLocation = Locations.HR;
-							} else if (x >= 41 && x <= 237 && y >= 310 && y <= 376) {
-								currentLocation = Locations.ADMINISTRATION;
-							} else if (x >= 30 && x <= 235 && y >= 410 && y <= 500) {
-								currentLocation = Locations.REALTOR;
-							}
-						}
-						break;
-					case Locations.HR:
-						if (this.canvas.width === 800 && this.canvas.height === 600) {
-							if (x >= 8 && x <= 80 && y >= 140 && y <= 300) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 10 && x <= 178 && y >= 20 && y <= 115) {
-								currentLocation = Locations.STREET;
-							}
-						} else if (this.canvas.width === 1024 && this.canvas.height === 600) {
-							if (x >= 10 && x <= 105 && y >= 140 && y <= 295) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 15 && x <= 230 && y >= 20 && y <= 120) {
-								currentLocation = Locations.STREET;
-							}
-						}
-						break;
-					case Locations.ADMINISTRATION:
-						if (this.canvas.width === 800 && this.canvas.height === 600) {
-							if (x >= 10 && x <= 100 && y >= 10 && y <= 115) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 130 && x <= 290 && y >= 15 && y <= 90) {
-								currentLocation = Locations.STREET;
-							}
-						} else if (this.canvas.width === 1024 && this.canvas.height === 600) {
-							if (x >= 10 && x <= 130 && y >= 10 && y <= 115) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 165 && x <= 375 && y >= 15 && y <= 95) {
-								currentLocation = Locations.STREET;
+						} else {
+							if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
+								this.players[0].goToLocation(this.locations.find(loc => loc instanceof Street));
+							} else if (x >= currentLocation.officeDoorCoors.x1 && x <= currentLocation.officeDoorCoors.x2 && y >= currentLocation.officeDoorCoors.y1 && y <= currentLocation.officeDoorCoors.y2) {
+								this.players[0].goToLocation(this.locations.find(loc => loc instanceof Office));
+							} else {
+								if (x >= currentLocation.vacancyCoors.x1 && x <= currentLocation.vacancyCoors.x2 && y >= currentLocation.vacancyCoors.y1 && y <= currentLocation.vacancyCoors.y2) {
+									currentLocation.choiceVacancyType = true;
+								}
 							}
 						}
 						break;
-					case Locations.REALTOR:
-						if (this.canvas.width === 800 && this.canvas.height === 600) {
-							if (x >= 10 && x <= 120 && y >= 10 && y <= 150) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 140 && x <= 310 && y >= 15 && y <= 105) {
-								currentLocation = Locations.STREET;
-							}
-						} else if (this.canvas.width === 1024 && this.canvas.height === 600) {
-							if (x >= 15 && x <= 155 && y >= 10 && y <= 150) {
-								currentLocation = Locations.OFFICE;
-							} else if (x >= 180 && x <= 400 && y >= 20 && y <= 110) {
-								currentLocation = Locations.STREET;
-							}
+					case currentLocation instanceof Administration:
+						if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof Street));
+						} else if (x >= currentLocation.officeDoorCoors.x1 && x <= currentLocation.officeDoorCoors.x2 && y >= currentLocation.officeDoorCoors.y1 && y <= currentLocation.officeDoorCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof Office));
 						}
+						break;
+					case currentLocation instanceof Realtor:
+						if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof Street));
+						} else if (x >= currentLocation.officeDoorCoors.x1 && x <= currentLocation.officeDoorCoors.x2 && y >= currentLocation.officeDoorCoors.y1 && y <= currentLocation.officeDoorCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof Office));
+						}
+						break;
+					case currentLocation instanceof Street:
+						if (x >= currentLocation.officeDoorCoors.x1 && x <= currentLocation.officeDoorCoors.x2 && y >= currentLocation.officeDoorCoors.y1 && y <= currentLocation.officeDoorCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof Office));
+						} else if (x >= currentLocation.hrDoorCoors.x1 && x <= currentLocation.hrDoorCoors.x2 && y >= currentLocation.hrDoorCoors.y1 && y <= currentLocation.hrDoorCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof HR));
+						} else if (x >= currentLocation.adminDoorCoors.x1 && x <= currentLocation.adminDoorCoors.x2 && y >= currentLocation.adminDoorCoors.y1 && y <= currentLocation.adminDoorCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof Administration));
+						} else if (x >= currentLocation.realtorDoorCoors.x1 && x <= currentLocation.realtorDoorCoors.x2 && y >= currentLocation.realtorDoorCoors.y1 && y <= currentLocation.realtorDoorCoors.y2) {
+							this.players[0].goToLocation(this.locations.find(loc => loc instanceof Realtor));
+						} else 
 						break;
 					default:
 						break;
 				}
-				this.players[0].currentLocation = currentLocation;
 			}
 			this.draw();
 		} else {
@@ -787,28 +1022,28 @@ class Game {
 			} else {
 				let currentLocation = this.players[0].currentLocation;
 				if (event.altKey && event.key === 'p') {
-					currentLocation = Locations.OFFICE;
+					currentLocation = this.locations.find(loc => loc instanceof Office);
 					this.isPaused = !this.isPaused;
 				} else {
 					switch (event.key) {
 						case 'p':
-							currentLocation = Locations.OFFICE;
+							currentLocation = this.locations.find(loc => loc instanceof Office);
 							this.isPaused = !this.isPaused;
 							break;
 						case 'o':
-							currentLocation = Locations.OFFICE;
+							currentLocation = this.locations.find(loc => loc instanceof Office);
 							break;
 						case 's':
-							currentLocation = Locations.STREET;
+							currentLocation = this.locations.find(loc => loc instanceof Street);
 							break;
 						case 'h':
-							currentLocation = Locations.HR;
+							currentLocation = this.locations.find(loc => loc instanceof HR);
 							break;
 						case 'a':
-							currentLocation = Locations.ADMINISTRATION;
+							currentLocation = this.locations.find(loc => loc instanceof Administration);
 							break;
 						case 'r':
-							currentLocation = Locations.REALTOR;
+							currentLocation = this.locations.find(loc => loc instanceof Realtor);
 							break;
 						default:
 							break;
@@ -830,7 +1065,6 @@ class Game {
 		this.addPlayer(new Player('bot1', this.locations));
 		this.addPlayer(new Player('bot2', this.locations));
 		this.addPlayer(new Player('bot3', this.locations));
-		console.log('players',this.players);
 		this.gameStarted = true;
 		this.startTime = new Date(2000, 0, 0, 23, 59, 59);
 		this.clearParams();
@@ -862,6 +1096,10 @@ class Game {
 		if (this.gameStarted) {
 			this.currentTime = currentTime;
 			const elapsedTime = this.currentTime - this.lastTime;
+			if (this.isPaused) {
+				this.lastTime = this.currentTime - (elapsedTime % this.interval);
+				this.lastMinuteTime = 0;
+			}
 			if (elapsedTime > this.interval) {
 				this.update(elapsedTime);
 				this.draw();
@@ -896,28 +1134,15 @@ class Game {
 	}
 	draw() {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		switch (this.players[0].currentLocation) {
-			case Locations.OFFICE:
-				this.ctx.drawImage(this.officeImage, 0, 0, this.canvas.width, this.canvas.height);
-				this.drawTime();
-				if (this.isPaused) {
-					this.ctx.drawImage(this.pauseImage, this.pauseImgX1, this.pauseImgY1, this.pauseImage.width, this.pauseImage.height);
-				}
-				break;
-			case Locations.STREET:
-				this.ctx.drawImage(this.streetImage, 0, 0, this.canvas.width, this.canvas.height);
-				break;
-			case Locations.HR:
-				this.ctx.drawImage(this.hrImage, 0, 0, this.canvas.width, this.canvas.height);
-				break;
-			case Locations.ADMINISTRATION:
-				this.ctx.drawImage(this.administationImage, 0, 0, this.canvas.width, this.canvas.height);
-				break;
-			case Locations.REALTOR:
-				this.ctx.drawImage(this.realtorImage, 0, 0, this.canvas.width, this.canvas.height);
-				break;
-			default:
-				break;
+		let currentLocation = this.players[0].currentLocation;
+		this.ctx.drawImage(currentLocation.image, 0, 0, this.canvas.width, this.canvas.height);
+		if (currentLocation instanceof Office) {
+			this.drawTime();
+			if (this.isPaused) {
+				this.ctx.drawImage(currentLocation.pauseImage, this.pauseImgX1, this.pauseImgY1, this.pauseImage.width, this.pauseImage.height);
+			}
+		} else if (currentLocation instanceof HR && currentLocation.choiceVacancyType) {
+			this.ctx.drawImage(currentLocation.vacancyTypesImage, 200, 10, this.vacancyTypesImage.width, this.vacancyTypesImage.height);
 		}
 	}
 	drawTime() {
