@@ -5,25 +5,36 @@ const employeeTypes = {
 	nurse: 'медсестра',
 	storeman: 'кладовщик',
 	cook: 'повар',
-	bouncer: 'вышибала',
+	hooligan: 'вышибала', //bouncer
 	driver: 'водитель-механик',
 };
 const doctorSpecializations = {
-	therapist: 'терапевт',
-	dentist: 'стоматолог',
-	psychiatrist: 'психиатр',
-	surgeon: 'хирург',
-	pathologist: 'паталогоанатом',
+	therapist: 'терапевт', //general doctor
+	dentist: 'стоматолог', //dentist
+	neurologist: 'невропатолог', //neurologist //psychiatrist
+	surgeon: 'хирург', //surgeon
+	pathologist: 'паталогоанатом', //pathologist
 };
 class Employee {
-	constructor(name, age, experience, education, salary) {
+	constructor(photo, name, age, height, weight, iq, education, salary) {
 		this.id = this._GetUniqueId();
-		this.name = name;
-		this.age = age;
-		this.experience = experience;
-		this.education = education;
-		this.salary = salary;
-		this.satisfaction = 50; // set a default satisfaction value of 50%
+		this.photo = photo || null;
+		this.name = name || 'NoName';
+		this.age = age || 18; //18,,63
+		this.height = height; //рост 140,,210
+		this.weight = weight; //вес 45,,100
+		this.iq = iq || 50; //30,,145
+		this.education = education || 0; //сколько классов закончил в школе 0..12
+		this.salary = salary || 1; //зарплата
+		this.experience = 0; //опыт - сколько задач выполнил
+		this.seniority = 0; //стаж, сколько дней работает тут
+		this.morality = 50; //мораль-выносливость 0%..100%
+		this.durationInJob = 0; //сколько часов находится на работе сегодня
+		this.satisfaction = 50; //удовлетворенность-довольство зарплатой 0%..100%
+		this.independence = 0; //самостоятельность, может ли работать сам, 0%..100%
+		this.doingNow = ''; //что делает сейчас
+		this.courses = 0; //сколько курсов обучения прошел
+		this.lazyness = ''; //характеристика о лени
 	}
 	_GetUniqueId(length=16) {
 		return parseInt(Math.ceil(Math.random() * Date.now()).toPrecision(length).toString().replace(".", ""))
@@ -38,40 +49,80 @@ class Employee {
 	}
 }
 class Doctor extends Employee {
-	constructor(specialization, name, age, experience, education, iq, certificates, salary) {
-		super(name, age, experience, education, salary);
-		this.specialization = specialization;
-		this.iq = iq;
-		this.certificates = certificates;
+	constructor(photo, name, age, height, weight, iq, education, salary, specialization, golf) {
+		super(photo, name, age, height, weight, iq, education, salary);
+		this.specialization = specialization || 'unknown';
+		this.golf = golf || 0;
+
+		//вакансия: iq образование зарплата
+		//кандидат: (тип врача) фото имя, возраст, iq рост вес образование зарплата
+		//приянт: номер фото имя возраст рост вес гольф iq образование опыт стаж мораль зарплата 
+		//на работе х часов сегодня
+		//довольство зарплатой
+		//может ли работать сам
+		//что делает сейчас
+		//сколько курсов прошел
+		//характеристика о лени
 	}
 }
 class Nurse extends Employee {
-	constructor(name, age, experience, education, chest, waist, hips, salary) {
-		super(name, age, experience, education, salary);
-		this.chest = chest;
-		this.waist = waist;
-		this.hips = hips;
+	constructor(photo, name, age, height, weight, iq, education, salary, body) {
+		super(photo, name, age, height, weight, iq, education, salary);
+		this.chest = body.chest || 80; //грудь
+		this.waist = body.waist || 50; //талия
+		this.hips = body.hips || 80; //бёдра
 	}
+	//вакансия - грудь, образование, зарплата
+	//кандидат: фото имя возраст рост вес фигура образование зарплата
+	//принят: номер фото имя рост вес возраст грудь талия бедра iq образование опыт стаж мораль зарплата на_работе
+	//довольство зарплатой
+	//может ли работать сам
 }
 class Storeman extends Employee {
-	constructor(name, age, experience, education, salary) {
-		super(name, age, experience, education, salary);
+	constructor(photo, name, age, height, weight, iq, education, salary, liver) {
+		super(photo, name, age, height, weight, iq, education, salary);
+		this.liver = liver; //уровень печени для алкоголя 0..100%
+		//вакансия: печень образование зарплата
+		//кандидат: фото имя возраст рост вес печень образование зарплата
+		//принят: номер фото имя номер возраст рост вес iq 
+		//печень единиц 
+		//образование 1-11 классов 
+		//стаж в днях (сколько работает тут)
+		//мораль %
+		//зарплата
+		//на работе сегодня х часов
+		//довольство зарплатой
+		//может ли работать сам
+
 	}
 }
 class Driver extends Employee {
-	constructor(name, age, experience, education, salary) {
-		super(name, age, experience, education, salary);
+	constructor(photo, name, age, height, weight, iq, education, salary, risk) {
+		super(photo, name, age, height, weight, iq, education, salary);
+		this.risk = risk; //уровень риска в гонках 0..100%
 	}
+	//вакансия: риск_рейтинг образование зарплата
+	//кандидат: имя iq рост вес образование зарплата
+	//принят: номер имя возврас рост вес риск iq образование опыт стаж мораль зарплата на_работе довольство может_ли_сам
 }
 class Cook extends Employee {
-	constructor(name, age, experience, education, salary) {
-		super(name, age, experience, education, salary);
+	constructor(photo, name, age, height, weight, iq, education, salary, hygiene) {
+		super(photo, name, age, height, weight, iq, education, salary);
+		this.hygiene = hygiene; //гигиена 0..100%
 	}
+	//вакансия: гигиена образование зарплата
+	//кандидат: имя возраст рост вес iq образование зарплата
+	//принят: номер возраст рост вес гигиена iq образование опыт стаж мораль зарплата на_работе довольство может_ли_сам_работать
+
 }
-class Bouncer extends Employee {
-	constructor(name, age, experience, education, salary) {
-		super(name, age, experience, education, salary);
+class Hooligan extends Employee {
+	constructor(photo, name, age, height, weight, iq, education, salary, punchLevel) {
+		super(photo, name, age, height, weight, iq, education, salary);
+		this.punchLevel = punchLevel; //уровень удара, драчунства 0..100%
 	}
+	//вакансия: (slap head) punch_up_rating образование зарплата
+	//кандидаты: (хулиган) имя возраст рост вес iq образование зарплата
+	//принят: номер имя возраст рост вес iq вышибала_ед образование опыт стаж мораль зарплатана_работе довольство может_ли_сам_работать
 }
 class Thing {
 	constructor(name, priceToBuy, priceToSell, state, image) {
@@ -196,6 +247,133 @@ class ClickCoordinates {
 		this.x2 = x2;
 		this.y1 = y1;
 		this.y2 = y2;
+	}
+}
+class VacancyTypeCoordinates {
+	constructor(width, height) {
+		this.width = width;
+		this.height = height;
+		this.buttonCancel = this.setCancel();
+		this.buttonNurse = this.setNurse();
+		this.buttonStoreman = this.setStoreman();
+		this.buttonTherapist = this.setTherapist();
+		this.buttonDentist = this.setDentist();
+		this.buttonNeurologist = this.setNeurologist();
+		this.buttonSurgeon = this.setSurgeon();
+		this.buttonPathologist = this.setPathologist();
+		this.buttonCook = this.setCook();
+		this.buttonDriver = this.setDriver();
+		this.buttonHooligan = this.setHooligan();
+	}
+	setCancel() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(520, 580, 480, 530);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setCancel: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setNurse() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(210, 335, 20, 100);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setNurse: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setStoreman() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(364, 490, 20, 100);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setStoreman: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setTherapist() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(210, 335, 130, 210);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setTherapist: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setDentist() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(364, 490, 130, 210);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setDentist: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setNeurologist() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(208, 335, 240, 320);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setNeurologist: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setSurgeon() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(364, 490, 240, 320);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setSurgeon: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setPathologist() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(208, 335, 345, 425);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setPathologist: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setCook() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(364, 490, 345, 425);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setCook: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setDriver() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(208, 335, 454, 535);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setDriver: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setHooligan() {
+		if (this.width === 800 && this.height === 600) {
+			return new ClickCoordinates(364, 490, 454, 535);
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`VacancyTypeCoordinates.setHooligan: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
 	}
 }
 class VacancyNurseCoordinates {
@@ -575,17 +753,7 @@ class HR extends Location {
 		this.officeDoorCoors = this.setOfficeCoors();
 		this.vacancyCoors = this.setVacancyCoors();
 		this.candidatesCoors = this.setCandidatesCoors();
-		this.nurseCoors = this.setNurseCoors();
-		this.storemanCoors = this.setStoremanCoors();
-		this.therapistCoors = this.setTherapistCoors();
-		this.dentistCoors = this.setDentistCoors();
-		this.psychiatristCoors = this.setPsychiatristCoors();
-		this.surgeonCoors = this.setSurgeonCoors();
-		this.pathologistCoors = this.setPathologistCoors();
-		this.cookCoors = this.setCookCoors();
-		this.driverCoors = this.setDriverCoors();
-		this.bouncerCoors = this.setBouncerCoors();
-		this.vacancyCancelCoors = this.setVacancyCancelCoors();
+		this.vacancyTypeCoords = new VacancyTypeCoordinates(this.image.width, this.image.height);
 		this.vacancyDoctorCoords = new VacancyDoctorCoordinates(this.image.width, this.image.height);
 		this.vacancyNurseCoords = new VacancyNurseCoordinates(this.image.width, this.image.height);
 		this.candidateCoords = new CandidateCoordinates(this.image.width, this.image.height);
@@ -634,127 +802,6 @@ class HR extends Location {
 			return new ClickCoordinates(0, 0, 0, 0);
 		} else {
 			console.error(`${this.name} setCandidatesCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setNurseCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 210, x2: 335, y1: 20, y2: 100};
-			return new ClickCoordinates(210, 335, 20, 100);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setNurseCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setStoremanCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 364, x2: 490, y1: 20, y2: 100};
-			return new ClickCoordinates(364, 490, 20, 100);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setStoremanCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setTherapistCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 210, x2: 335, y1: 130, y2: 210};
-			return new ClickCoordinates(210, 335, 130, 210);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setTherapistCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setDentistCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 364, x2: 490, y1: 130, y2: 210};
-			return new ClickCoordinates(364, 490, 130, 210);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setDentistCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setPsychiatristCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 208, x2: 335, y1: 240, y2: 320};
-			return new ClickCoordinates(208, 335, 240, 320);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setPsychiatristCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setSurgeonCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 364, x2: 490, y1: 240, y2: 320};
-			return new ClickCoordinates(364, 490, 240, 320);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setSurgeonCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setPathologistCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 208, x2: 335, y1: 345, y2: 425};
-			return new ClickCoordinates(208, 335, 345, 425);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setPathologistCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setCookCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 364, x2: 490, y1: 345, y2: 425};
-			return new ClickCoordinates(364, 490, 345, 425);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setCookCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setDriverCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 208, x2: 335, y1: 454, y2: 535};
-			return new ClickCoordinates(208, 335, 454, 535);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setDriverCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setBouncerCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 364, x2: 490, y1: 454, y2: 535};
-			return new ClickCoordinates(364, 490, 454, 535);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setBouncerCoors: incorrect image size! Cannot set coordinates!`);
-			return new ClickCoordinates(0, 0, 0, 0);
-		}
-	}
-	setVacancyCancelCoors() {
-		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 520, x2: 580, y1: 480, y2: 530};
-			return new ClickCoordinates(520, 580, 480, 530);
-		} else if (this.image.width === 1024 && this.image.height === 768) {
-			return new ClickCoordinates(0, 0, 0, 0);
-		} else {
-			console.error(`${this.name} setVacancyCancelCoors: incorrect image size! Cannot set coordinates!`);
 			return new ClickCoordinates(0, 0, 0, 0);
 		}
 	}
@@ -930,16 +977,15 @@ class TherapistOffice extends Room {
 	}
 }
 class Vacancy {
-	constructor(employeeType, specialization, body, education, experience, salary) {
+	constructor(employeeType, specialization, body, education, salary) {
 		this.employeeType = employeeType;
 		this.specialization = employeeType === employeeTypes.doctor ? specialization : null;
 		this.chest = employeeType === employeeTypes.nurse ? body.chest : null;
 		this.waist = employeeType === employeeTypes.nurse ? body.waist : null;
 		this.hips = employeeType === employeeTypes.nurse ? body.hips : null;
 		this.minAge = 18;
-		this.age = this.minAge + education + experience;
+		this.age = this.minAge + education;
 		this.education = education;
-		this.experience = experience;
 		this.salary = salary;
 		this.publishTime = new Date();
 		this.durationByMinutes = 120;
@@ -1042,21 +1088,20 @@ class Vacancy {
 		if (this.calculateChance() === 1) {
 			const numCandidates = Math.floor(Math.random() * 4); // Generate a random number of candidates between 0 and 3
 			for (let i = 0; i < numCandidates; i++) {
+				const photo = new Image();
+				photo.src = './images/man.jpg';
 				let education = this.education + Math.floor(Math.random() * 3) - 1;
 				if (education < 0) {
 					education = 0;
 				}
-				let experience = this.experience + Math.floor(Math.random() * 5) - 2;
-				if (experience < 0) {
-					experience = 0;
-				}
-				let age = this.minAge + education + experience + Math.floor(Math.random() * 15) - 5;
+				const height = 170;
+				const weight = 60;
+				let age = this.minAge + education + Math.floor(Math.random() * 15) - 5;
 				if (age < this.minAge) {
 					age = this.minAge;
 					education = 0;
-					experience = 0;
-				} else if (age < this.minAge + education + experience) {
-					age = this.minAge + education + experience;
+				} else if (age < this.minAge + education) {
+					age = this.minAge + education;
 				}
 				const minSalary = this.salary * 0.7; // 70% of vacancy's salary
 				const maxSalary = this.salary * 1.3; // 130% of vacancy's salary
@@ -1068,14 +1113,16 @@ class Vacancy {
 				if (this.employeeType === employeeTypes.doctor) {
 					const name = doctorNames[Math.floor(Math.random() * doctorNames.length)];
 					const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
-					const certificates = Math.floor(Math.random() * 5);
-					candidate = new Doctor(this.specialization, name, age, experience, education, iq, certificates, salary);
+					const golf = Math.floor(Math.random() * 10);
+					candidate = new Doctor(photo, name, age, height, weight, iq, education, salary, this.specialization, golf);
 				} else if (this.employeeType === employeeTypes.nurse) {
 					const name = nurseNames[Math.floor(Math.random() * nurseNames.length)];
+					const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
 					const chest = this.chest + Math.floor(Math.random() * 10) - 5; //грудь
 					const waist = this.waist + Math.floor(Math.random() * 10) - 5; //талия
 					const hips = this.hips + Math.floor(Math.random() * 10) - 5; //бёдра
-					candidate = new Nurse(name, age, experience, education, chest, waist, hips, salary);
+					const body = { chest, waist, hips };
+					candidate = new Nurse(photo, name, age, height, weight, iq, education, salary, body);
 				} else {
 					console.log(`Don't generate candidates for this vacancy, unknown employeeType '${this.employeeType}'`);
 				}
@@ -1183,8 +1230,8 @@ class Player {
 			salary: 0
 		}
 	}
-	publishVacancy(employeeType, specialization, body, education, experience, salary) {
-		const vacancy = new Vacancy(employeeType, specialization, body, education, experience, salary);
+	publishVacancy(employeeType, specialization, body, education, salary) {
+		const vacancy = new Vacancy(employeeType, specialization, body, education, salary);
 		this.vacancies.push(vacancy);
 	}
 	clearCandidates() {
@@ -1532,7 +1579,7 @@ class Game {
 							break;
 						case currentLocation instanceof HR:
 							if (currentLocation.choiceVacancyType) {
-								if (x >= currentLocation.nurseCoors.x1 && x <= currentLocation.nurseCoors.x2 && y >= currentLocation.nurseCoors.y1 && y <= currentLocation.nurseCoors.y2) {
+								if (x >= currentLocation.vacancyTypeCoords.buttonNurse.x1 && x <= currentLocation.vacancyTypeCoords.buttonNurse.x2 && y >= currentLocation.vacancyTypeCoords.buttonNurse.y1 && y <= currentLocation.vacancyTypeCoords.buttonNurse.y2) {
 									console.log('nurse vacancy');
 									player.newVacancy.employeeType = employeeTypes.nurse;
 									player.newVacancy.specialization = '';
@@ -1547,7 +1594,7 @@ class Game {
 									currentLocation.showDoctorVacancy = false;
 									currentLocation.showNurseVacancy = true;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.storemanCoors.x1 && x <= currentLocation.storemanCoors.x2 && y >= currentLocation.storemanCoors.y1 && y <= currentLocation.storemanCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonStoreman.x1 && x <= currentLocation.vacancyTypeCoords.buttonStoreman.x2 && y >= currentLocation.vacancyTypeCoords.buttonStoreman.y1 && y <= currentLocation.vacancyTypeCoords.buttonStoreman.y2) {
 									console.log('storeman vacancy');
 									player.newVacancy.employeeType = employeeTypes.storeman;
 									player.newVacancy.specialization = '';
@@ -1562,7 +1609,7 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.therapistCoors.x1 && x <= currentLocation.therapistCoors.x2 && y >= currentLocation.therapistCoors.y1 && y <= currentLocation.therapistCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonTherapist.x1 && x <= currentLocation.vacancyTypeCoords.buttonTherapist.x2 && y >= currentLocation.vacancyTypeCoords.buttonTherapist.y1 && y <= currentLocation.vacancyTypeCoords.buttonTherapist.y2) {
 									console.log('therapist vacancy');
 									player.newVacancy.employeeType = employeeTypes.doctor;
 									player.newVacancy.specialization = doctorSpecializations.therapist;
@@ -1577,7 +1624,7 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.dentistCoors.x1 && x <= currentLocation.dentistCoors.x2 && y >= currentLocation.dentistCoors.y1 && y <= currentLocation.dentistCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonDentist.x1 && x <= currentLocation.vacancyTypeCoords.buttonDentist.x2 && y >= currentLocation.vacancyTypeCoords.buttonDentist.y1 && y <= currentLocation.vacancyTypeCoords.buttonDentist.y2) {
 									console.log('dentist vacancy');
 									player.newVacancy.employeeType = employeeTypes.doctor;
 									player.newVacancy.specialization = doctorSpecializations.dentist;
@@ -1592,10 +1639,10 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.psychiatristCoors.x1 && x <= currentLocation.psychiatristCoors.x2 && y >= currentLocation.psychiatristCoors.y1 && y <= currentLocation.psychiatristCoors.y2) {
-									console.log('psychiatrist vacancy');
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonNeurologist.x1 && x <= currentLocation.vacancyTypeCoords.buttonNeurologist.x2 && y >= currentLocation.vacancyTypeCoords.buttonNeurologist.y1 && y <= currentLocation.vacancyTypeCoords.buttonNeurologist.y2) {
+									console.log('neurologist vacancy');
 									player.newVacancy.employeeType = employeeTypes.doctor;
-									player.newVacancy.specialization = doctorSpecializations.psychiatrist;
+									player.newVacancy.specialization = doctorSpecializations.neurologist;
 									player.newVacancy.body = {
 										chest: 0,
 										waist: 0,
@@ -1607,7 +1654,7 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.surgeonCoors.x1 && x <= currentLocation.surgeonCoors.x2 && y >= currentLocation.surgeonCoors.y1 && y <= currentLocation.surgeonCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonSurgeon.x1 && x <= currentLocation.vacancyTypeCoords.buttonSurgeon.x2 && y >= currentLocation.vacancyTypeCoords.buttonSurgeon.y1 && y <= currentLocation.vacancyTypeCoords.buttonSurgeon.y2) {
 									console.log('surgeon vacancy');
 									player.newVacancy.employeeType = employeeTypes.doctor;
 									player.newVacancy.specialization = doctorSpecializations.surgeon;
@@ -1622,7 +1669,7 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.pathologistCoors.x1 && x <= currentLocation.pathologistCoors.x2 && y >= currentLocation.pathologistCoors.y1 && y <= currentLocation.pathologistCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonPathologist.x1 && x <= currentLocation.vacancyTypeCoords.buttonPathologist.x2 && y >= currentLocation.vacancyTypeCoords.buttonPathologist.y1 && y <= currentLocation.vacancyTypeCoords.buttonPathologist.y2) {
 									console.log('pathologist vacancy');
 									player.newVacancy.employeeType = employeeTypes.doctor;
 									player.newVacancy.specialization = doctorSpecializations.pathologist;
@@ -1637,7 +1684,7 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.cookCoors.x1 && x <= currentLocation.cookCoors.x2 && y >= currentLocation.cookCoors.y1 && y <= currentLocation.cookCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonCook.x1 && x <= currentLocation.vacancyTypeCoords.buttonCook.x2 && y >= currentLocation.vacancyTypeCoords.buttonCook.y1 && y <= currentLocation.vacancyTypeCoords.buttonCook.y2) {
 									console.log('cook vacancy');
 									player.newVacancy.employeeType = employeeTypes.cook;
 									player.newVacancy.specialization = '';
@@ -1652,7 +1699,7 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.driverCoors.x1 && x <= currentLocation.driverCoors.x2 && y >= currentLocation.driverCoors.y1 && y <= currentLocation.driverCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonDriver.x1 && x <= currentLocation.vacancyTypeCoords.buttonDriver.x2 && y >= currentLocation.vacancyTypeCoords.buttonDriver.y1 && y <= currentLocation.vacancyTypeCoords.buttonDriver.y2) {
 									console.log('driver vacancy');
 									player.newVacancy.employeeType = employeeTypes.driver;
 									player.newVacancy.specialization = '';
@@ -1667,9 +1714,9 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.bouncerCoors.x1 && x <= currentLocation.bouncerCoors.x2 && y >= currentLocation.bouncerCoors.y1 && y <= currentLocation.bouncerCoors.y2) {
-									console.log('bouncer vacancy');
-									player.newVacancy.employeeType = employeeTypes.bouncer;
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonHooligan.x1 && x <= currentLocation.vacancyTypeCoords.buttonHooligan.x2 && y >= currentLocation.vacancyTypeCoords.buttonHooligan.y1 && y <= currentLocation.vacancyTypeCoords.buttonHooligan.y2) {
+									console.log('hooligan vacancy');
+									player.newVacancy.employeeType = employeeTypes.hooligan;
 									player.newVacancy.specialization = '';
 									player.newVacancy.body = {
 										chest: 0,
@@ -1682,7 +1729,7 @@ class Game {
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
-								} else if (x >= currentLocation.vacancyCancelCoors.x1 && x <= currentLocation.vacancyCancelCoors.x2 && y >= currentLocation.vacancyCancelCoors.y1 && y <= currentLocation.vacancyCancelCoors.y2) {
+								} else if (x >= currentLocation.vacancyTypeCoords.buttonCancel.x1 && x <= currentLocation.vacancyTypeCoords.buttonCancel.x2 && y >= currentLocation.vacancyTypeCoords.buttonCancel.y1 && y <= currentLocation.vacancyTypeCoords.buttonCancel.y2) {
 									currentLocation.choiceVacancyType = false;
 									console.log('close choiceVacancyType');
 								} else {
@@ -1756,7 +1803,6 @@ class Game {
 										player.newVacancy.specialization,
 										player.newVacancy.body,
 										player.newVacancy.education,
-										player.newVacancy.experience,
 										player.newVacancy.salary);
 									console.log(`${player.newVacancy.employeeType} Vacancy: ok`);
 									player.clearNewVacancy();
@@ -1805,7 +1851,6 @@ class Game {
 										player.newVacancy.specialization,
 										player.newVacancy.body,
 										player.newVacancy.education,
-										player.newVacancy.experience,
 										player.newVacancy.salary);
 									console.log(`${player.newVacancy.employeeType} Vacancy: ok`);
 									player.clearNewVacancy();
@@ -1935,7 +1980,7 @@ class Game {
 								} else if (event.key === 'd') {
 									console.log('dentist vacancy');
 								} else if (event.key === 'p') {
-									console.log('psychiatrist vacancy');
+									console.log('neurologist vacancy');
 								} else if (event.key === 'g') {
 									console.log('surgeon vacancy');
 								} else if (event.key === 'h') {
@@ -1945,7 +1990,7 @@ class Game {
 								} else if (event.key === 'd') {
 									console.log('driver vacancy');
 								} else if (event.key === 'b') {
-									console.log('bouncerCoors vacancy');
+									console.log('hooligan vacancy');
 								} else if (event.key === 'q') {
 									currentLocation.choiceVacancyType = false;
 								}
@@ -2199,7 +2244,7 @@ class Game {
 						return 'водитель-механик';
 					case employeeTypes.cook:
 						return 'повар';
-					case employeeTypes.bouncer:
+					case employeeTypes.hooligan:
 						return 'вышибала';
 					default:
 						return 'unknown';
@@ -2211,8 +2256,8 @@ class Game {
 					switch(specialization) {
 						case doctorSpecializations.therapist:
 							return 'терапевт';
-						case doctorSpecializations.psychiatrist:
-							return 'психиатр';
+						case doctorSpecializations.neurologist:
+							return 'невропатолог';
 						case doctorSpecializations.dentist:
 							return 'стоматолог';
 						case doctorSpecializations.surgeon:
@@ -2255,8 +2300,8 @@ class Game {
 			x = 30;
 			y = 40;
 		}
-		if (this.players[0].currentCandidate) {
-			const player = this.players[0];
+		const player = this.players[0];
+		if (player.currentCandidate) {
 			let candidate = player.currentCandidate;
 			let candidateIndex = player.candidates.indexOf(candidate);
 			let employeeType = 'непонятный кандидат';
@@ -2273,8 +2318,8 @@ class Game {
 				employeeType = employeeTypes.driver;
 			} else if (candidate instanceof Cook) {
 				employeeType = employeeTypes.cook;
-			} else if (candidate instanceof Bouncer) {
-				employeeType = employeeTypes.bouncer;
+			} else if (candidate instanceof Hooligan) {
+				employeeType = employeeTypes.hooligan;
 			}
 			this.ctx.fillText(`${candidateIndex+1}) ${employeeType}: #${candidate.id}`, x, y);
 			this.ctx.fillText(`'${candidate.name}', ${candidate.age} лет`, x, y+30);
