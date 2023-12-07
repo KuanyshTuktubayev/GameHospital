@@ -16,16 +16,22 @@ const doctorSpecializations = {
 	pathologist: 'паталогоанатом', //pathologist
 };
 class Employee {
-	constructor(photo, name, age, height, weight, iq, education, salary) {
+	constructor(photo, name, iq, education, salary) {
 		this.id = this._GetUniqueId();
-		this.photo = photo || null;
+		this.photo = photo;
 		this.name = name || 'NoName';
-		this.age = age || 18; //18,,63
-		this.height = height; //рост 140,,210
-		this.weight = weight; //вес 45,,100
 		this.iq = iq || 50; //30,,145
 		this.education = education || 0; //сколько классов закончил в школе 0..12
 		this.salary = salary || 1; //зарплата
+		const minAge = 18;
+		const maxAge = 63;
+		this.age = minAge + Math.floor(Math.random() * (maxAge - minAge + 1)); //возраст 18,,63
+		const minHeight = 150;
+		const maxHeight = 210;
+		this.height = minHeight + Math.floor(Math.random() * (maxHeight - minHeight + 1)); //рост 140,,210
+		const minWeight = 50;
+		const maxWeight = 100;
+		this.weight = minWeight + Math.floor(Math.random() * (maxWeight - minWeight + 1)); //вес 45,,100
 		this.experience = 0; //опыт - сколько задач выполнил
 		this.seniority = 0; //стаж, сколько дней работает тут
 		this.morality = 50; //мораль-выносливость 0%..100%
@@ -49,8 +55,8 @@ class Employee {
 	}
 }
 class Doctor extends Employee {
-	constructor(photo, name, age, height, weight, iq, education, salary, specialization, golf) {
-		super(photo, name, age, height, weight, iq, education, salary);
+	constructor(photo, name, iq, education, salary, specialization, golf) {
+		super(photo, name, iq, education, salary);
 		this.specialization = specialization || 'unknown';
 		this.golf = golf || 0;
 
@@ -66,8 +72,8 @@ class Doctor extends Employee {
 	}
 }
 class Nurse extends Employee {
-	constructor(photo, name, age, height, weight, iq, education, salary, body) {
-		super(photo, name, age, height, weight, iq, education, salary);
+	constructor(photo, name, iq, education, salary, body) {
+		super(photo, name, iq, education, salary);
 		this.chest = body.chest || 80; //грудь
 		this.waist = body.waist || 50; //талия
 		this.hips = body.hips || 80; //бёдра
@@ -79,8 +85,8 @@ class Nurse extends Employee {
 	//может ли работать сам
 }
 class Storeman extends Employee {
-	constructor(photo, name, age, height, weight, iq, education, salary, liver) {
-		super(photo, name, age, height, weight, iq, education, salary);
+	constructor(photo, name, iq, education, salary, liver) {
+		super(photo, name, iq, education, salary);
 		this.liver = liver; //уровень печени для алкоголя 0..100%
 		//вакансия: печень образование зарплата
 		//кандидат: фото имя возраст рост вес печень образование зарплата
@@ -97,8 +103,8 @@ class Storeman extends Employee {
 	}
 }
 class Driver extends Employee {
-	constructor(photo, name, age, height, weight, iq, education, salary, risk) {
-		super(photo, name, age, height, weight, iq, education, salary);
+	constructor(photo, name, iq, education, salary, risk) {
+		super(photo, name, iq, education, salary);
 		this.risk = risk; //уровень риска в гонках 0..100%
 	}
 	//вакансия: риск_рейтинг образование зарплата
@@ -106,8 +112,8 @@ class Driver extends Employee {
 	//принят: номер имя возврас рост вес риск iq образование опыт стаж мораль зарплата на_работе довольство может_ли_сам
 }
 class Cook extends Employee {
-	constructor(photo, name, age, height, weight, iq, education, salary, hygiene) {
-		super(photo, name, age, height, weight, iq, education, salary);
+	constructor(photo, name, iq, education, salary, hygiene) {
+		super(photo, name, iq, education, salary);
 		this.hygiene = hygiene; //гигиена 0..100%
 	}
 	//вакансия: гигиена образование зарплата
@@ -116,8 +122,8 @@ class Cook extends Employee {
 
 }
 class Hooligan extends Employee {
-	constructor(photo, name, age, height, weight, iq, education, salary, punchLevel) {
-		super(photo, name, age, height, weight, iq, education, salary);
+	constructor(photo, name, iq, education, salary, punchLevel) {
+		super(photo, name, iq, education, salary);
 		this.punchLevel = punchLevel; //уровень удара, драчунства 0..100%
 	}
 	//вакансия: (slap head) punch_up_rating образование зарплата
@@ -977,14 +983,13 @@ class TherapistOffice extends Room {
 	}
 }
 class Vacancy {
-	constructor(employeeType, specialization, body, education, salary) {
+	constructor(employeePhotos, employeeType, specialization, body, education, salary) {
+		this.employeePhotos = employeePhotos;
 		this.employeeType = employeeType;
 		this.specialization = employeeType === employeeTypes.doctor ? specialization : null;
 		this.chest = employeeType === employeeTypes.nurse ? body.chest : null;
 		this.waist = employeeType === employeeTypes.nurse ? body.waist : null;
 		this.hips = employeeType === employeeTypes.nurse ? body.hips : null;
-		this.minAge = 18;
-		this.age = this.minAge + education;
 		this.education = education;
 		this.salary = salary;
 		this.publishTime = new Date();
@@ -1088,20 +1093,11 @@ class Vacancy {
 		if (this.calculateChance() === 1) {
 			const numCandidates = Math.floor(Math.random() * 4); // Generate a random number of candidates between 0 and 3
 			for (let i = 0; i < numCandidates; i++) {
-				const photo = new Image();
-				photo.src = './images/man.jpg';
+				const indexOfPhoto = Math.floor(Math.random() * this.employeePhotos.length);
+        		const photo = this.employeePhotos[indexOfPhoto];
 				let education = this.education + Math.floor(Math.random() * 3) - 1;
 				if (education < 0) {
 					education = 0;
-				}
-				const height = 170;
-				const weight = 60;
-				let age = this.minAge + education + Math.floor(Math.random() * 15) - 5;
-				if (age < this.minAge) {
-					age = this.minAge;
-					education = 0;
-				} else if (age < this.minAge + education) {
-					age = this.minAge + education;
 				}
 				const minSalary = this.salary * 0.7; // 70% of vacancy's salary
 				const maxSalary = this.salary * 1.3; // 130% of vacancy's salary
@@ -1114,7 +1110,7 @@ class Vacancy {
 					const name = doctorNames[Math.floor(Math.random() * doctorNames.length)];
 					const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
 					const golf = Math.floor(Math.random() * 10);
-					candidate = new Doctor(photo, name, age, height, weight, iq, education, salary, this.specialization, golf);
+					candidate = new Doctor(photo, name, iq, education, salary, this.specialization, golf);
 				} else if (this.employeeType === employeeTypes.nurse) {
 					const name = nurseNames[Math.floor(Math.random() * nurseNames.length)];
 					const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
@@ -1122,7 +1118,7 @@ class Vacancy {
 					const waist = this.waist + Math.floor(Math.random() * 10) - 5; //талия
 					const hips = this.hips + Math.floor(Math.random() * 10) - 5; //бёдра
 					const body = { chest, waist, hips };
-					candidate = new Nurse(photo, name, age, height, weight, iq, education, salary, body);
+					candidate = new Nurse(photo, name, iq, education, salary, body);
 				} else {
 					console.log(`Don't generate candidates for this vacancy, unknown employeeType '${this.employeeType}'`);
 				}
@@ -1188,9 +1184,11 @@ class Client {
 	}
 }
 class Player {
-	constructor(name, locations) {
+	constructor(name, locations, employeeMalePhotos, employeesFemaleImage) {
 		this.name = name;
 		this.locations = locations;
+		this.employeeMalePhotos = employeeMalePhotos;
+		this.employeesFemaleImage = employeesFemaleImage;
 		this.money = 100;
 		this.vacancies = [];
 		this.candidates = [];
@@ -1231,7 +1229,8 @@ class Player {
 		}
 	}
 	publishVacancy(employeeType, specialization, body, education, salary) {
-		const vacancy = new Vacancy(employeeType, specialization, body, education, salary);
+		const employeePhotos = (employeeType === employeeTypes.nurse) ? this.employeesFemaleImage : this.employeeMalePhotos;
+		const vacancy = new Vacancy(employeePhotos, employeeType, specialization, body, education, salary);
 		this.vacancies.push(vacancy);
 	}
 	clearCandidates() {
@@ -1472,7 +1471,7 @@ class Game {
 	};
 	initializeStartImage() {
         const loadingImage = new Image();
-        loadingImage.src = `./${this.imageFolder}/loading.jpg`;
+        loadingImage.src = `${this.imageFolder}/loading.jpg`;
         loadingImage.onload = () => {
 			this.loadingImage = loadingImage;
 			if (this.loadingImage) {
@@ -1484,20 +1483,23 @@ class Game {
 			}
 			this.draw();
 			Promise.all([
-				this.loadImage(`./${this.imageFolder}/mainmenu.jpg`),
-				this.loadImage(`./${this.imageFolder}/office.jpg`),
-				this.loadImage(`./${this.imageFolder}/street.jpg`),
-				this.loadImage(`./${this.imageFolder}/hr.jpg`),
-				this.loadImage(`./${this.imageFolder}/administation.jpg`),
-				this.loadImage(`./${this.imageFolder}/realtor.jpg`),
-				this.loadImage(`./${this.imageFolder}/paused.jpg`),
-				this.loadImage(`./${this.imageFolder}/vacancyChoice.jpg`),
-				this.loadImage(`./${this.imageFolder}/vacancyDoctor.jpg`),
-				this.loadImage(`./${this.imageFolder}/vacancyNurse.jpg`),
-				this.loadImage(`./${this.imageFolder}/candidates.jpg`),
+				this.loadImage(`${this.imageFolder}/mainmenu.jpg`),
+				this.loadImage(`${this.imageFolder}/office.jpg`),
+				this.loadImage(`${this.imageFolder}/street.jpg`),
+				this.loadImage(`${this.imageFolder}/hr.jpg`),
+				this.loadImage(`${this.imageFolder}/administation.jpg`),
+				this.loadImage(`${this.imageFolder}/realtor.jpg`),
+				this.loadImage(`${this.imageFolder}/paused.jpg`),
+				this.loadImage(`${this.imageFolder}/vacancyChoice.jpg`),
+				this.loadImage(`${this.imageFolder}/vacancyDoctor.jpg`),
+				this.loadImage(`${this.imageFolder}/vacancyNurse.jpg`),
+				this.loadImage(`${this.imageFolder}/candidates.jpg`),
+				this.loadImage(`${this.imageFolder}/employeesMale.jpg`),
+				this.loadImage(`${this.imageFolder}/employeesFemale.jpg`),
 			])
 			.then(([mainmenuImage, officeImage, streetImage, hrImage, administationImage, realtorImage, pauseImage,
-					vacancyTypesImage, vacancyDoctorImage, vacancyNurseImage, candidatesImage]) => {
+					vacancyTypesImage, vacancyDoctorImage, vacancyNurseImage, candidatesImage,
+					employeesMaleImage, employeesFemaleImage]) => {
 				this.mainmenuImage = mainmenuImage;
 				this.officeImage = officeImage;
 				this.streetImage = streetImage;
@@ -1509,6 +1511,12 @@ class Game {
 				this.vacancyDoctorImage = vacancyDoctorImage;
 				this.vacancyNurseImage = vacancyNurseImage;
 				this.candidatesImage = candidatesImage;
+				this.employeesMaleImage = employeesMaleImage;
+				this.employeesFemaleImage = employeesFemaleImage;
+				this.employeeMalePhotos = [];
+				this.employeeFemalePhotos = [];
+				this.extractPhotosFromImage('male', this.employeesMaleImage, 100);
+				this.extractPhotosFromImage('female', this.employeesFemaleImage, 100);
 				this.setPauseImageParams();
 				const office = new Office(this.officeImage, this.pauseImage);
 				const hrImages = {
@@ -1527,7 +1535,7 @@ class Game {
 				this.locations.push(administration);
 				this.locations.push(realtor);
 				this.locations.push(street);
-				this.addPlayer(new Player('human1', this.locations));
+				this.addPlayer(new Player('human1', this.locations, this.employeeMalePhotos, this.employeeFemalePhotos));
 				this.isLoading = false;
 				console.log(`game loaded`);
 			})
@@ -1536,6 +1544,35 @@ class Game {
 			});
         };
     }
+	async extractPhotosFromImage(gender, image, numPhotos) {
+		const photoWidth = Math.round(image.width / 10 ,0);
+		const photoHeight = Math.round(image.height / 10 ,0);
+		const offscreenCanvas = new OffscreenCanvas(photoWidth, photoHeight);
+		const offscreenContext = offscreenCanvas.getContext('2d');
+		let column = 0;
+		let row = 0;
+		for (let i = 0; i < numPhotos; i++) {
+			const startX = photoWidth * column; //Math.floor(Math.random() * (image.width - photoWidth));
+			const startY = photoHeight * row; //Math.floor(Math.random() * (image.height - photoHeight));
+			offscreenContext.drawImage(image, startX, startY, photoWidth, photoHeight, 0, 0, photoWidth, photoHeight);
+			const imageBitmap = await createImageBitmap(offscreenCanvas);
+			const photo = await createImageBitmap(imageBitmap);
+			if (photo) {
+				if (gender === 'male') {
+					this.employeeMalePhotos.push(photo);
+				} else if (gender === 'female') {
+					this.employeeFemalePhotos.push(photo);
+				} else {
+					console.error(`extractPhotosFromImage: incorrent gender '${gender}'`);
+				}
+			}
+			column++;
+			if (column > 9) {
+				column = 0;
+				row++;
+			}
+		}
+	}
 	setPauseImageParams() {
 		this.pauseImgX1 = this.canvas.width/2 - this.pauseImage.width/2;
 		this.pauseImgX2 = this.pauseImgX1 + this.pauseImage.width;
@@ -1804,9 +1841,9 @@ class Game {
 										player.newVacancy.body,
 										player.newVacancy.education,
 										player.newVacancy.salary);
-									console.log(`${player.newVacancy.employeeType} Vacancy: ok`);
+									console.log(`Nurse Vacancy: ok, publishVacancy ${player.newVacancy.employeeType}`);
 									player.clearNewVacancy();
-									console.log(`vacancies`,player.vacancies);
+									//console.log(`vacancies`,player.vacancies);
 								} else if (x >= currentLocation.vacancyNurseCoords.buttonCancel.x1 && x <= currentLocation.vacancyNurseCoords.buttonCancel.x2 && y >= currentLocation.vacancyNurseCoords.buttonCancel.y1 && y <= currentLocation.vacancyNurseCoords.buttonCancel.y2) {
 									currentLocation.showNurseVacancy = false;
 									console.log(`Nurse Vacancy: cancel`);
@@ -1852,9 +1889,9 @@ class Game {
 										player.newVacancy.body,
 										player.newVacancy.education,
 										player.newVacancy.salary);
-									console.log(`${player.newVacancy.employeeType} Vacancy: ok`);
+									console.log(`Doctor Vacancy: ok, publishVacancy ${player.newVacancy.employeeType}`);
 									player.clearNewVacancy();
-									console.log(`vacancies`,player.vacancies);
+									//console.log(`vacancies`,player.vacancies);
 								} else if (x >= currentLocation.vacancyDoctorCoords.buttonCancel.x1 && x <= currentLocation.vacancyDoctorCoords.buttonCancel.x2 && y >= currentLocation.vacancyDoctorCoords.buttonCancel.y1 && y <= currentLocation.vacancyDoctorCoords.buttonCancel.y2) {
 									currentLocation.showDoctorVacancy = false;
 									console.log(`Doctor Vacancy: cancel`);
@@ -1874,7 +1911,7 @@ class Game {
 								} else {
 									console.log(`invalid coordinates, still showing candidates`);
 								}
-								console.log(`player.vacancies`, player.vacancies);
+								//console.log(`player.vacancies`, player.vacancies);
 							} else {
 								if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
 									player.goToLocation(this.locations.find(loc => loc instanceof Street));
@@ -2053,9 +2090,9 @@ class Game {
 			return;
 		}
 		console.log(`game starting...`);
-		this.addPlayer(new Player('bot1', this.locations));
-		this.addPlayer(new Player('bot2', this.locations));
-		this.addPlayer(new Player('bot3', this.locations));
+		this.addPlayer(new Player('bot1', this.locations, this.employeeMalePhotos, this.employeeFemalePhotos));
+		this.addPlayer(new Player('bot2', this.locations, this.employeeMalePhotos, this.employeeFemalePhotos));
+		this.addPlayer(new Player('bot3', this.locations, this.employeeMalePhotos, this.employeeFemalePhotos));
 		this.gameStarted = true;
 		this.startTime = new Date(2000, 0, 0, 23, 59, 59);
 		this.clearTimeParams();
@@ -2308,10 +2345,10 @@ class Game {
 			let additional = '';
 			if (candidate instanceof Nurse) {
 				employeeType = employeeTypes.nurse;
-				additional = `${candidate.chest}*${candidate.waist}*${candidate.hips}`;
+				additional = `фигура ${candidate.chest}*${candidate.waist}*${candidate.hips}`;
 			} else if (candidate instanceof Doctor) {
 				employeeType = employeeTypes.doctor + ' ' + candidate.specialization;
-				additional = `IQ: ${candidate.iq}, сертификатов: ${candidate.certificates}`;
+				additional = `IQ: ${candidate.iq}`;
 			} else if (candidate instanceof Storeman) {
 				employeeType = employeeTypes.storeman;
 			} else if (candidate instanceof Driver) {
@@ -2326,14 +2363,13 @@ class Game {
 			this.ctx.fillText(`учился ${candidate.education} лет,`, x, y+(30*2));
 			this.ctx.fillText(`опыт работы ${candidate.experience} лет`, x, y+(30*3));
 			let lineNum = 4;
-			if (candidate instanceof Nurse) {
-				this.ctx.fillText(`фигура ${additional}`, x, y+(30*lineNum));
-				lineNum++;
-			} else if (candidate instanceof Doctor) {
+			if (candidate instanceof Nurse || candidate instanceof Doctor) {
 				this.ctx.fillText(`${additional}`, x, y+(30*lineNum));
 				lineNum++;
 			}
 			this.ctx.fillText(`хочет зарплату ${candidate.salary}$ в день`, x, y+(30*lineNum));
+			lineNum++;
+			this.ctx.drawImage(candidate.photo, x, y + (30 * lineNum), 100, 100);
 		} else {
 			this.ctx.fillText(`никто не оставлял свое резюме!`, x, y);
 		}
@@ -2347,5 +2383,3 @@ try {
 } catch(e) {
 	console.error(e);
 }
-
-
