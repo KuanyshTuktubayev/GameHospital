@@ -15,14 +15,35 @@ const doctorSpecializations = {
 	surgeon: 'хирург', //surgeon
 	pathologist: 'паталогоанатом', //pathologist
 };
+const employeeLocations = {
+	hr: 'hr',
+	office: 'office',
+	home: 'home',
+	course: 'course',
+	police: 'police',
+	reception: 'reception',
+	waitingRoom: 'waitingRoom',
+	therapistOffice: 'therapistOffice',
+	dentistOffice: 'dentistOffice',
+	neurologistOffice: 'neurologistOffice',
+	garage: 'garage',
+	kitchen: 'kitchen',
+	street: 'street',
+};
+const ownerships = {
+	none: 'none',
+	rented: 'rented',
+	bought: 'bought',
+};
 class Employee {
 	constructor(photo, name, iq, education, salary) {
 		this.id = this._GetUniqueId();
 		this.photo = photo;
 		this.name = name || 'NoName';
-		this.iq = iq || 50; //30..145
+		this.iq = iq || 50; //30..145, зависит от education, courses
 		this.education = education || 0; //сколько классов закончил в школе 0..12
-		this.salary = salary || 1; //зарплата
+		this.salaryPrefer = salary || 1; //желаемая зарплата, зависит от iq, личных свойств потомка Employee, 
+		this.salaryPay = 1; //выплачиваемая зарплата
 		const minAge = 18;
 		const maxAge = 63;
 		this.age = minAge + Math.floor(Math.random() * (maxAge - minAge + 1)); //возраст 18..63
@@ -33,25 +54,57 @@ class Employee {
 		const maxWeight = 100;
 		this.weight = minWeight + Math.floor(Math.random() * (maxWeight - minWeight + 1)); //вес 45..100
 		this.experience = 0; //опыт - сколько задач выполнил
-		this.seniority = 0; //стаж, сколько дней работает тут
-		this.morality = 50; //мораль-выносливость 0%..100%
-		this.durationInJob = 0; //сколько часов находится на работе сегодня
-		this.satisfaction = 50; //удовлетворенность-довольство зарплатой 0%..100%
-		this.independence = 0; //самостоятельность, может ли работать сам, 0%..100%
+		this.seniority = 0; //стаж, сколько дней работает, зависит от hiredDate
+		this.morality = 50; //мораль-выносливость 0%..100%, зависит от durationInJob
+		this.hiredDate = null; //дата приема на работу
+		this.timeCameToJob = null; //время прихода на работу
+		this.durationInJob = 0; //сколько часов находится на работе с момента timeCameToJob
+		this.satisfaction = 50; //удовлетворенность-довольство зарплатой %%, зависит от salaryPrefer, salaryPay
+		this.satisfactionDescription = ''; //описание удовлетворенности, зависит от satisfaction
+		this.independence = 0; //самостоятельность, может ли работать сам, 0%..100%, зависит от experience, iq
 		this.doingNow = ''; //что делает сейчас
 		this.courses = 0; //сколько курсов обучения прошел
 		this.lazyness = ''; //характеристика о лени
+		this.currentLocation = null;
 	}
 	_GetUniqueId(length=16) {
 		return parseInt(Math.ceil(Math.random() * Date.now()).toPrecision(length).toString().replace(".", ""))
 	}
-	calculateSatisfaction(expectedSalary) {
-		const diff = expectedSalary - this.salary;
-		if (diff >= 0) {
-			this.satisfaction = 100;
-		} else {
-			this.satisfaction = 50 + (diff / expectedSalary) * 50; // calculate satisfaction based on the difference between the employee's salary and the expected salary
+	calculateSatisfaction() {
+		const diff = this.salaryPay - this.salaryPrefer;
+		this.satisfaction = (1 + (diff / this.salaryPrefer)) * 100;
+		if (this.satisfaction >= 120) {
+			this.satisfactionDescription = 'просто сияет из-за зарплаты';
+		} else if (this.satisfaction >= 115 && this.satisfaction < 120) {
+			this.satisfactionDescription = 'прыгает от счастья из-за зарплаты';
+		} else if (this.satisfaction >= 110 && this.satisfaction < 115) {
+			this.satisfactionDescription = 'крайне удовлетворен зарплатой';
+		} else if (this.satisfaction >= 100 && this.satisfaction < 110) {
+			this.satisfactionDescription = 'Очень доволен зарплатой';
+		} else if (this.satisfaction >= 85 && this.satisfaction < 100) {
+			this.satisfactionDescription = 'Доволен зарплатой';
+		} else if (this.satisfaction >= 70 && this.satisfaction < 85) {
+			this.satisfactionDescription = 'Ворчит по поводу зарплаты';
+		} else if (this.satisfaction >= 50 && this.satisfaction < 70) {
+			this.satisfactionDescription = 'Раздражен зарплатой';
+		} else if (this.satisfaction >= 30 && this.satisfaction < 50) {
+			this.satisfactionDescription = 'Проклинает ничтожную зарплату';
+		} else if (this.satisfaction < 30) {
+			this.satisfactionDescription = 'Думает об отставке';
 		}
+	}
+	getCalculatedDurationInJob(time) {
+		const elapsedMilliseconds = time - this.timeCameToJob;
+		const elapsedHours = elapsedMilliseconds / (1000 * 60 * 60);
+		return Math.floor(elapsedHours) + 1;
+	}
+	getCalculatedSeniority(date) {
+		const elapsedMilliseconds = date - this.hiredDate;
+		const elapsedHours = elapsedMilliseconds / (1000 * 60);
+		return Math.floor(elapsedHours) + 1;
+	}
+	changeLocation(newLocation) {
+		this.currentLocation = newLocation;
 	}
 }
 class Doctor extends Employee {
@@ -297,7 +350,7 @@ class VacancyTypeCoordinates {
 	}
 	setCancel() {
 		if (this.width === 800 && this.height === 600) {
-			const circularButton = new CircularClickCoordinates(550, 505, 40);
+			const circularButton = new CircularClickCoordinates(553, 505, 40);
 			return circularButton;
 		} else if (this.width === 1024 && this.height === 768) {
 			return new ClickCoordinates(0, 0, 0, 0);
@@ -671,6 +724,7 @@ class CandidateCoordinates {
 		this.height = height;
 		this.buttonPrevious = this.setPrevious();
 		this.buttonNext = this.setNext();
+		this.buttonHire = this.setHire();
 		this.buttonCancel = this.setCancel();
 	}
 	setPrevious() {
@@ -690,6 +744,17 @@ class CandidateCoordinates {
 			return new ClickCoordinates(0, 0, 0, 0);
 		} else {
 			console.error(`CandidateCoordinates.setNext: incorrect image size! Cannot set coordinates!`);
+			return new ClickCoordinates(0, 0, 0, 0);
+		}
+	}
+	setHire() {
+		if (this.width === 800 && this.height === 600) {
+			const ellipticalButton = new EllipticalClickCoordinates(555, 390, 25, 30);
+			return ellipticalButton;
+		} else if (this.width === 1024 && this.height === 768) {
+			return new ClickCoordinates(0, 0, 0, 0);
+		} else {
+			console.error(`CandidateCoordinates.setHire: incorrect image size! Cannot set coordinates!`);
 			return new ClickCoordinates(0, 0, 0, 0);
 		}
 	}
@@ -716,6 +781,7 @@ class Office extends Location {
 		this.image = images.background;
 		this.pauseImage = images.pauseImage;
 		this.pausedImage = images.pausedImage;
+		this.windowImage = images.windowImage;
 		this.goToHRImage = images.goToHRImage;
 		this.goToAdministrationImage = images.goToAdministrationImage;
 		this.goToRealtorImage = images.goToRealtorImage;
@@ -740,7 +806,7 @@ class Office extends Location {
 	}
 	setWindowCoors() {
 		if (this.image.width === 800 && this.image.height === 600) {
-			return new ClickCoordinates(5, 170, 60, 245);
+			return new ClickCoordinates(0, 170, 49, 245);
 		} else if (this.image.width === 1024 && this.image.height === 768) {
 			return new ClickCoordinates(0, 0, 0, 0);
 		} else {
@@ -794,7 +860,12 @@ class HR extends Location {
 	constructor(images) {
 		super('Отдел кадров');
 		this.image = images.background;
+		this.windowImage = images.windowImage;
+		this.goToOfficeImage = images.goToOfficeImage;
+		this.newVacancyImage = images.newVacancyImage;
+		this.showCandidatesImage = images.showCandidatesImage;
 		this.vacancyTypesImage = images.vacancyTypesImage;
+		this.vacancyTypesCancelImage = images.vacancyTypesCancelImage;
 		this.vacancyDoctorImage = images.vacancyDoctorImage;
 		this.vacancyNurseImage = images.vacancyNurseImage;
 		this.candidatesImage = images.candidatesImage;
@@ -841,8 +912,7 @@ class HR extends Location {
 	}
 	setWindowCoors() {
 		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 10, x2: 178, y1: 20, y2: 115};
-			return new ClickCoordinates(10, 178, 20, 115);
+			return new ClickCoordinates(5, 178, 13, 115);
 		} else if (this.image.width === 1024 && this.image.height === 768) {
 			return new ClickCoordinates(0, 0, 0, 0);
 		} else {
@@ -852,8 +922,7 @@ class HR extends Location {
 	}
 	setOfficeCoors() {
 		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 8, x2: 80, y1: 140, y2: 300};
-			return new ClickCoordinates(8, 80, 140, 300);
+			return new ClickCoordinates(3, 80, 135, 300);
 		} else if (this.image.width === 1024 && this.image.height === 768) {
 			return new ClickCoordinates(0, 0, 0, 0);
 		} else {
@@ -863,8 +932,7 @@ class HR extends Location {
 	}
 	setVacancyCoors() {
 		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 200, x2: 330, y1: 10, y2: 305};
-			return new ClickCoordinates(200, 330, 10, 305);
+			return new ClickCoordinates(163, 335, 249, 305);
 		} else if (this.image.width === 1024 && this.image.height === 768) {
 			return new ClickCoordinates(0, 0, 0, 0);
 		} else {
@@ -874,7 +942,6 @@ class HR extends Location {
 	}
 	setCandidatesCoors() {
 		if (this.image.width === 800 && this.image.height === 600) {
-			//return {x1: 390, x2: 575, y1: 260, y2: 310};
 			return new ClickCoordinates(390, 575, 260, 310);
 		} else if (this.image.width === 1024 && this.image.height === 768) {
 			return new ClickCoordinates(0, 0, 0, 0);
@@ -1006,15 +1073,22 @@ class Street extends Location {
 class Hospital extends Location {
 	constructor(name, ownership) {
 		super(name);
-		this.isRented = false;
 		this.ownership = ownership;
 	}
 	rent() {
-		if (this.isRented) {
-			console.log(`${this.name} уже был взят в аренду.`);
+		if (this.ownership === ownerships.rented) {
+			console.log(`${this.name} already rented`);
 		} else {
-			this.isRented = true;
-			console.log(`${this.name} взят в аренду.`);
+			this.ownership === ownerships.rented;
+			console.log(`${this.name} rented`);
+		}
+	}
+	buy() {
+		if (this.ownership === ownerships.bought) {
+			console.log(`${this.name} already bought`);
+		} else {
+			this.ownership === ownerships.bought;
+			console.log(`${this.name} bought`);
 		}
 	}
 }
@@ -1023,7 +1097,7 @@ class Room extends Hospital {
 		super(name);
 		this.price = price;
 		this.square = square;
-		this.isRented = false;
+		this.ownership = ownerships.none;
 		this.interiorItems = [];
 		this.supplies = [];
 	}
@@ -1033,6 +1107,7 @@ class Reception extends Room {
 		super('Ресепшен', 5, 4);
 		this.interiorItems = [new WoodenTable(0, 120, 55), new WoodenChair(0, 12, 85), new ArtificialTurf(0, 110, 35)];
 		this.supplies = [new Pen('шариковая ручка', 0, 8, 78)];
+		this.nurse = null;
 		this.clients = [];
 	}
 	sendClientToWaitingRoom(client, waitingRoom) {
@@ -1046,82 +1121,31 @@ class WaitingRoom extends Room {
 		super('Зал ожидания', 8, 7);
 		this.interiorItems = [new PlasticChair(0, 9, 35), new WoodenChair(0, 12, 85), new PersianRug(0, 115, 37)];
 		this.supplies = [new Magazine('автомобильный журнал', 0, 3, 46)];
+		this.nurse = null;
 		this.clients = [];
 	}
 }
 class TherapistOffice extends Room {
 	constructor() {
 		super('Кабинет терапевта', 7, 6);
+		this.doctor = null;
+		this.nurse = null;
+		this.clients = [];
 	}
 }
 class Vacancy {
-	constructor(employeePhotos, employeeType, specialization, body, education, salary) {
+	constructor(employeePhotos, education, salary) {
+		this.isPublished = false;
 		this.employeePhotos = employeePhotos;
-		this.employeeType = employeeType;
-		this.specialization = employeeType === employeeTypes.doctor ? specialization : null;
-		this.chest = employeeType === employeeTypes.nurse ? body.chest : null;
-		this.waist = employeeType === employeeTypes.nurse ? body.waist : null;
-		this.hips = employeeType === employeeTypes.nurse ? body.hips : null;
 		this.education = education;
 		this.salary = salary;
 		this.publishTime = new Date();
 		this.durationByMinutes = 120;
 		this.candidates = [];
+		this.chanceByAge = 0;
 	}
-	calculateChance() {
-		// Calculate the chance of generating a candidate based on the parameter values
-		let chance = 0.5; // default chance
-		switch (this.employeeType) {
-			case employeeTypes.doctor:
-				chance -= 0.2;
-				if (this.age < 30) {
-					chance += 0.15;
-				} else if (this.age >= 30 && this.age < 40) {
-					chance += 0.1;
-				} else if (this.age >= 40 && this.age < 50) {
-					chance -= 0.05;
-				} else {
-					chance += 0.05;
-				}
-				break;
-			case employeeTypes.nurse:
-				chance -= 0.1;
-				if (this.age < 25) {
-					chance += 0.1;
-				} else if (this.age >= 25 && this.age < 30) {
-					chance -= 0.1;
-				} else if (this.age >= 30 && this.age < 35) {
-					chance -= 0.05;
-				} else if (this.age >= 35 && this.age < 40) {
-					chance += 0.05;
-				} else if (this.age >= 40 && this.age < 50) {
-					chance += 0.1;
-				} else {
-					chance += 0.15;
-				}
-				break;
-			default:
-				break;
-		}
-		
-		if (this.experience < 10) {
-			chance += 0.15;
-		} else if (this.experience >= 10 && this.experience < 50) {
-			chance += 0.1;
-		} else if (this.experience >= 50 && this.experience < 100) {
-			chance += 0.08;
-		} else if (this.experience >= 100 && this.experience < 200) {
-			chance += 0.05;
-		} else if (this.experience >= 200 && this.experience < 500) {
-			chance += 0.01;
-		} else if (this.experience >= 500 && this.experience < 700) {
-			chance -= 0.05;
-		} else if (this.experience >= 700 && this.experience < 1000) {
-			chance -= 0.1;
-		} else {
-			chance -= 0.2;
-		}
-		
+	calculateChanceByEducation() {
+		let chance = 0;
 		if (this.education < 2) {
 			chance += 0.2;
 		} else if (this.education >= 2 && this.education < 5) {
@@ -1135,7 +1159,10 @@ class Vacancy {
 		} else {
 			chance -= 0.2;
 		}
-		
+		return chance;
+	}
+	calculateChanceBySalary() {
+		let chance = 0;
 		if (this.salary < 10) {
 			chance -= 0.05;
 		} else if (this.salary >= 10 && this.salary < 13) {
@@ -1147,8 +1174,13 @@ class Vacancy {
 		} else {
 			chance += 0.15;
 		}
-
-		// Generate a random number and compare it to the chance value
+		return chance;
+	}
+	calculateChance(chanceByAge) {
+		let chance = 0.5;
+		chance += chanceByAge;
+		chance += this.calculateChanceByEducation();
+		chance += this.calculateChanceBySalary();
 		const randomNumber = Math.random();
 		if (randomNumber < chance) {
 			return 1;
@@ -1156,14 +1188,37 @@ class Vacancy {
 			return 0;
 		}
 	}
+}
+class VacancyDoctor extends Vacancy {
+	constructor(employeePhotos, education, salary, specialization, golf) {
+		super(employeePhotos, education, salary);
+		this.specialization = specialization;
+		this.golf = golf;
+	}
+	calculateChanceByAge() {
+		let chance = 0;
+		if (this.age < 30) {
+			chance += 0.15;
+		} else if (this.age >= 30 && this.age < 40) {
+			chance += 0.1;
+		} else if (this.age >= 40 && this.age < 50) {
+			chance -= 0.05;
+		} else {
+			chance += 0.05;
+		}
+		this.chanceByAge = chance;
+	}
+	calculateChance() {
+		const chanceByAge = this.calculateChanceByAge();
+		return super.calculateChance(chanceByAge);
+	}
 	generateCandidates() {
 		if (this.candidates.length > 15) {
 			console.warn(`vacancy of '${this.employeeType}': generated ${this.candidates.length} candidates. Will not generate more.`);
 			return;
 		}
-		//let countOfNewCandidates = 0;
 		if (this.calculateChance() === 1) {
-			const numCandidates = Math.floor(Math.random() * 4); // Generate a random number of candidates between 0 and 3
+			const numCandidates = Math.floor(Math.random() * 4);
 			for (let i = 0; i < numCandidates; i++) {
 				const indexOfPhoto = Math.floor(Math.random() * this.employeePhotos.length);
         		const photo = this.employeePhotos[indexOfPhoto];
@@ -1171,36 +1226,82 @@ class Vacancy {
 				if (education < 0) {
 					education = 0;
 				}
-				const minSalary = this.salary * 0.7; // 70% of vacancy's salary
-				const maxSalary = this.salary * 1.3; // 130% of vacancy's salary
-				let salary = Math.round( Math.floor(Math.random() * (maxSalary - minSalary + 1)) + minSalary ,0);
+				const minSalary = this.salary * 0.7;
+				const maxSalary = this.salary * 1.3;
+				let salary = Math.round(Math.random() * (maxSalary - minSalary + 1) + minSalary, 0);
 				if (salary <= 0) {
-					salary = (Math.round(this.salary * 0.5 ,0) > 0) ? Math.round(this.salary * 0.5 ,0) : minSalary;
+					const halfSalary = Math.round(this.salary * 0.5 ,0);
+					salary = (halfSalary > 0) ? halfSalary : minSalary;
 				}
-				let candidate = null;
-				if (this.employeeType === employeeTypes.doctor) {
-					const name = doctorNames[Math.floor(Math.random() * doctorNames.length)];
-					const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
-					const golf = Math.floor(Math.random() * 10);
-					candidate = new Doctor(photo, name, iq, education, salary, this.specialization, golf);
-				} else if (this.employeeType === employeeTypes.nurse) {
-					const name = nurseNames[Math.floor(Math.random() * nurseNames.length)];
-					const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
-					const chest = this.chest + Math.floor(Math.random() * 10) - 5; //грудь
-					const waist = this.waist + Math.floor(Math.random() * 10) - 5; //талия
-					const hips = this.hips + Math.floor(Math.random() * 10) - 5; //бёдра
-					const body = { chest, waist, hips };
-					candidate = new Nurse(photo, name, iq, education, salary, body);
-				} else {
-					console.log(`Don't generate candidates for this vacancy, unknown employeeType '${this.employeeType}'`);
-				}
-				if (candidate && candidate !== null) {
-					this.candidates.push(candidate);
-				}
-				//countOfNewCandidates++;
+				const name = doctorNames[Math.floor(Math.random() * doctorNames.length)];
+				const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
+				const golf = Math.floor(Math.random() * 10);
+				const candidate = new Doctor(photo, name, iq, education, salary, this.specialization, golf);
+				this.candidates.push(candidate);
 			}
 		}
-		//console.log(`${countOfNewCandidates} new candidates for vacancy '${this.employeeType}'`);
+	}
+}
+class VacancyNurse extends Vacancy {
+	constructor(employeePhotos, education, salary, chest) {
+		super(employeePhotos, education, salary);
+		this.chest = chest; //грудь
+	}
+	calculateChanceByAge() {
+		let chance = 0;
+		if (this.age < 25) {
+			chance += 0.1;
+		} else if (this.age >= 25 && this.age < 30) {
+			chance -= 0.1;
+		} else if (this.age >= 30 && this.age < 35) {
+			chance -= 0.05;
+		} else if (this.age >= 35 && this.age < 40) {
+			chance += 0.05;
+		} else if (this.age >= 40 && this.age < 50) {
+			chance += 0.1;
+		} else {
+			chance += 0.15;
+		}
+		this.chanceByAge = chance;
+	}
+	calculateChance() {
+		const chanceByAge = this.calculateChanceByAge();
+		return super.calculateChance(chanceByAge);
+	}
+	generateCandidates() {
+		if (this.candidates.length > 15) {
+			console.warn(`vacancy of '${this.employeeType}': generated ${this.candidates.length} candidates. Will not generate more.`);
+			return;
+		}
+		if (this.calculateChance() === 1) {
+			const numCandidates = Math.floor(Math.random() * 4);
+			for (let i = 0; i < numCandidates; i++) {
+				const indexOfPhoto = Math.floor(Math.random() * this.employeePhotos.length);
+        		const photo = this.employeePhotos[indexOfPhoto];
+				let education = this.education + Math.floor(Math.random() * 3) - 1;
+				if (education < 0) {
+					education = 0;
+				}
+				const minSalary = this.salary * 0.7;
+				const maxSalary = this.salary * 1.3;
+				let salary = Math.round(Math.random() * (maxSalary - minSalary + 1) + minSalary, 0);
+				if (salary <= 0) {
+					const halfSalary = Math.round(this.salary * 0.5 ,0);
+					salary = (halfSalary > 0) ? halfSalary : minSalary;
+				}
+				const name = nurseNames[Math.floor(Math.random() * nurseNames.length)];
+				const iq = this.education * 10 + Math.floor(Math.random() * 50) - 25;
+				const waist = Math.floor(Math.random() * 10) - 5; //талия
+				const hips = Math.floor(Math.random() * 10) - 5; //бёдра
+				const body = {
+					chest: this.chest,
+					waist: waist,
+					hips: hips
+				};
+				const candidate = new Nurse(photo, name, iq, education, salary, body);
+				this.candidates.push(candidate);
+			}
+		}
 	}
 }
 class Client {
@@ -1224,13 +1325,13 @@ class Client {
 			if (!players || players.length === 0) {
 				return;
 			}
-			const rentedReceptionPlayers = players.filter(player => player.rentedRooms.some(room => room instanceof Reception));
-			if (rentedReceptionPlayers.length > 0) { // Check if there are rented receptions
-				const randomIndex = Math.floor(Math.random() * rentedReceptionPlayers.length); // Choose a random player index
-				const player = rentedReceptionPlayers[randomIndex]; // Get the random player
-				const reception = player.rentedRooms.find(room => room instanceof Reception);
+			const playersWithReception = players.filter(player => player.rooms.some(room => room instanceof Reception));
+			if (playersWithReception.length > 0) { // Check if there are rented receptions
+				const randomIndex = Math.floor(Math.random() * playersWithReception.length); // Choose a random player index
+				const player = playersWithReception[randomIndex]; // Get the random player
+				const reception = player.rooms.find(room => room instanceof Reception);
 				if (reception) {
-					reception.clients.push(newClient);
+					reception.clients.push(this);
 				}
 			}
 		}
@@ -1265,17 +1366,16 @@ class Player {
 		this.vacancies = [];
 		this.candidates = [];
 		this.employees = [];
-		this.rentedRooms = [];
+		this.rooms = [];
 		this.currentLocation = this.locations.find(loc => loc instanceof Office);
 		this.currentCandidate = null;
-		let limitsOfRentingRooms = {
+		let limitsOfRooms = {
 			maxReceptions: 1,
 			maxWaitingRooms: 5,
 			maxTherapistOffices: 10,
 		};
-		this.setLimitsForRooms(limitsOfRentingRooms);
-		this.newVacancy = {};
-		this.clearNewVacancy();
+		this.setLimitsForRooms(limitsOfRooms);
+		this.newVacancy = null;
 	}
 	setLimitsForRooms(limitsOfRooms) {
 		this.maxReceptions = limitsOfRooms.maxReceptions;
@@ -1287,23 +1387,11 @@ class Player {
 		console.log(`change location to '${newLocation.name}'`);
 	}
 	clearNewVacancy() {
-		this.newVacancy = {
-			employeeType: '',
-			specialization: '',
-			body: {
-				chest: 0,
-				waist: 0,
-				hips: 0,
-			},
-			experience: 0,
-			education: 0,
-			salary: 0
-		}
+		this.newVacancy = null;
 	}
-	publishVacancy(employeeType, specialization, body, education, salary) {
-		const employeePhotos = (employeeType === employeeTypes.nurse) ? this.employeesFemaleImage : this.employeeMalePhotos;
-		const vacancy = new Vacancy(employeePhotos, employeeType, specialization, body, education, salary);
-		this.vacancies.push(vacancy);
+	publishVacancy() {
+		this.newVacancy.isPublished = true;
+		this.vacancies.push(this.newVacancy);
 	}
 	clearCandidates() {
 		while(this.candidates.length > 0) {
@@ -1343,7 +1431,7 @@ class Player {
 			if (currentVacancy) {
 				//dont change this.currentCandidate
 			} else {
-				console.warn(`selected candidate went away! Getting other candidate...`, this.currentCandidate);
+				console.log(`selected candidate went away! Getting other candidate...`, this.currentCandidate);
 				this.currentCandidate = getFirstCandidate(this.vacancies);
 			}
 		}
@@ -1435,47 +1523,123 @@ class Player {
 		}
 		return null;
 	}
-	hireEmployee(vacancyIndex, candidateIndex) {
-		const vacancy = this.vacancies[vacancyIndex];
-		const candidate = vacancy.candidates[candidateIndex];
-		const expectedSalary = candidate.salary;
-		if (this.money >= expectedSalary) {
-			candidate.calculateSatisfaction(expectedSalary);
-			this.employees.push(candidate);
-			this.money -= candidate.salary;
+	hireEmployee(time) {
+		if (this.currentCandidate === null) {
+			return;
+		}
+		const vacancy = this.vacancies.find(vacancy => vacancy.candidates.includes(this.currentCandidate));
+		const vacancyIndex = this.vacancies.indexOf(vacancy);
+		if (this.money >= vacancy.salary) {
+			this.money -= vacancy.salary;
+			const employee = this.currentCandidate;
+			employee.salaryPay = vacancy.salary;
+			employee.calculateSatisfaction();
+			employee.hiredDate = time;
+			employee.timeCameToJob = time;
+			employee.durationInJob = employee.getCalculatedDurationInJob(time);
+			employee.seniority = employee.getCalculatedSeniority(time);
+			employee.changeLocation(employeeLocations.office);
+			this.employees.push(employee);
+			console.log(`player '${this.name}' hired '${employee.name}' by vacancy ${vacancy.employeeType}`);
 			this.vacancies.splice(vacancyIndex, 1);
+			this.updateCurrentCandidate();
 		}
 	}
+	updateEmployees(date) {
+		this.employees.forEach(employee => {
+			employee.durationInJob = employee.getCalculatedDurationInJob(date);
+			employee.seniority = employee.getCalculatedSeniority(date);
+			employee.doingNow = 'Скучает без дела';
+			if (employee.currentLocation === employeeLocations.therapistOffice) {
+				employee.doingNow = 'Работает в кабинете терапевта';
+			}
+		});
+	}
 	rentRoom(room) {
-		if (room.isRented) {
-			console.log(`Игрок ${this.name} уже арендовал ${room.name}.`);
+		if (room.ownership === ownerships.rented) {
+			console.log(`player '${this.name}' already rented '${room.name}'`);
 		} else if (this.money < room.price) {
-			console.log(`Игрок ${this.name} не имеет достаточно денег для аренды ${room.name} стоимостью ${room.price} в день.`);
+			console.log(`player '${this.name}' has not enough money to rent '${room.name}' which cost '${room.price}' per day`);
 		} else {
 			// Check if the player has reached the limit for this type of room
 			let roomCount = 0;
 			if (room instanceof Reception) {
-				roomCount = this.rentedRooms.filter(r => r instanceof Reception).length;
-				if (roomCount >= this.maxReceptions) {
-					console.log(`Игрок ${this.name} уже арендовал максимальное количество ресепшенов.`);
+				roomCount = this.rooms.filter(r => r instanceof Reception).length;
+				if (roomCount >= this.limitsOfRooms.maxReceptions) {
+					console.log(`player '${this.name}' rented max count of reception.`);
 					return;
 				}
 			} else if (room instanceof WaitingRoom) {
-				roomCount = this.rentedRooms.filter(r => r instanceof WaitingRoom).length;
-				if (roomCount >= this.maxWaitingRooms) {
-					console.log(`Игрок ${this.name} уже арендовал максимальное количество залов ожидания.`);
+				roomCount = this.rooms.filter(r => r instanceof WaitingRoom).length;
+				if (roomCount >= this.limitsOfRooms.maxWaitingRooms) {
+					console.log(`player '${this.name}' rented max count of waiting room.`);
 					return;
 				}
 			} else if (room instanceof TherapistOffice) {
-				roomCount = this.rentedRooms.filter(r => r instanceof TherapistOffice).length;
-				if (roomCount >= this.maxTherapistOffices) {
-					console.log(`Игрок ${this.name} уже арендовал максимальное количество кабинетов терапевта.`);
+				roomCount = this.rooms.filter(r => r instanceof TherapistOffice).length;
+				if (roomCount >= this.limitsOfRooms.maxTherapistOffices) {
+					console.log(`player '${this.name}' rented max count of therapist office.`);
 					return;
 				}
 			}
 			room.rent();
-			this.rentedRooms.push(room);
+			this.rooms.push(room);
 			this.money -= room.price;
+		}
+	}
+	buyRoom(room) {
+		if (room.ownership === ownerships.bought) {
+			console.log(`player '${this.name}' already bought '${room.name}'`);
+		} else if (this.money < room.price) {
+			console.log(`player '${this.name}' has not enough money to buy '${room.name}' which cost '${room.price}'`);
+		} else {
+			// Check if the player has reached the limit for this type of room
+			let roomCount = 0;
+			if (room instanceof Reception) {
+				roomCount = this.rooms.filter(r => r instanceof Reception).length;
+				if (roomCount >= this.limitsOfRooms.maxReceptions) {
+					console.log(`player '${this.name}' bought max count of reception.`);
+					return;
+				}
+			} else if (room instanceof WaitingRoom) {
+				roomCount = this.rooms.filter(r => r instanceof WaitingRoom).length;
+				if (roomCount >= this.limitsOfRooms.maxWaitingRooms) {
+					console.log(`player '${this.name}' bought max count of waiting room.`);
+					return;
+				}
+			} else if (room instanceof TherapistOffice) {
+				roomCount = this.rooms.filter(r => r instanceof TherapistOffice).length;
+				if (roomCount >= this.limitsOfRooms.maxTherapistOffices) {
+					console.log(`player '${this.name}' bought max count of therapist office.`);
+					return;
+				}
+			}
+			room.buy();
+			this.rooms.push(room);
+			this.money -= room.price;
+		}
+	}
+	changeEmployeeInRoom(employee, room) {
+		if (!room || room === null || room !== this.currentLocation) {
+			console.error(`to assign employee '${employee.name}' in room '${room.name}' you must go to the room!`);
+			return;
+		}
+		if (employee instanceof Doctor) {
+			if (room === this.currentLocation && (room === this.rooms.find(r => r instanceof TherapistOffice))) {
+				employee.changeLocation(room);
+				room.doctor = employee;
+			} else {
+				console.error(`unknown type of room for doctor`, room);
+			}
+		} else if (employee instanceof Nurse) {
+			if (room === this.currentLocation && (room === this.rooms.find(r => r instanceof Reception) || room === this.rooms.find(r => r instanceof WaitingRoom) || room === this.rooms.find(r => r instanceof TherapistOffice))) {
+				employee.changeLocation(room);
+				room.nurse = employee;
+			} else {
+				console.error(`unknown type of room for nurse`, room);
+			}
+		} else {
+			console.error(`unknown type of employee`, employee);
 		}
 	}
 	kikClientOut(client) {
@@ -1494,7 +1658,10 @@ class Game {
 		this.fps = 60;
 		this.interval = 1000 / this.fps;
 		this.startTime = new Date(2000, 0, 1, 0, 0, 0);
-		this.clearTimeParams();
+		this.time = this.formatTime(this.startTime);
+		this.lastMinuteTime = 0;
+		this.lastTime = 0;
+		this.currentTime = 0;
 		this.minuteDuration = minuteDuration || 5000;
 		this.players = [];
 		this.locations = [];
@@ -1558,16 +1725,22 @@ class Game {
 			Promise.all([
 				this.loadImage(`${this.imageFolder}/mainmenu.jpg`),
 				this.loadImage(`${this.imageFolder}/office.jpg`),
+				this.loadImage(`${this.imageFolder}/officeWindow.jpg`),
 				this.loadImage(`${this.imageFolder}/pause.jpg`),
 				this.loadImage(`${this.imageFolder}/officeDoorToHR.jpg`),
 				this.loadImage(`${this.imageFolder}/officeDoorToAdministration.jpg`),
 				this.loadImage(`${this.imageFolder}/officeDoorToRealtor.jpg`),
 				this.loadImage(`${this.imageFolder}/street.jpg`),
 				this.loadImage(`${this.imageFolder}/hr.jpg`),
+				this.loadImage(`${this.imageFolder}/hrWindow.jpg`),
+				this.loadImage(`${this.imageFolder}/hrDoorToOffice.jpg`),
+				this.loadImage(`${this.imageFolder}/hrVacancy.jpg`),
+				this.loadImage(`${this.imageFolder}/hrCandidates.jpg`),
 				this.loadImage(`${this.imageFolder}/administation.jpg`),
 				this.loadImage(`${this.imageFolder}/realtor.jpg`),
 				this.loadImage(`${this.imageFolder}/paused.jpg`),
 				this.loadImage(`${this.imageFolder}/vacancyChoice.jpg`),
+				this.loadImage(`${this.imageFolder}/vacancyChoiceCancel.jpg`),
 				this.loadImage(`${this.imageFolder}/vacancyDoctor.jpg`),
 				this.loadImage(`${this.imageFolder}/vacancyNurse.jpg`),
 				this.loadImage(`${this.imageFolder}/candidates.jpg`),
@@ -1575,22 +1748,29 @@ class Game {
 				this.loadImage(`${this.imageFolder}/employeesFemale.jpg`),
 			])
 			.then(([mainmenuImage,
-					officeImage, pauseImage, fromOfficeToHRImage, fromOfficeToAdministrationImage, fromOfficeToRealtorImage,
-					streetImage, hrImage, administationImage, realtorImage, pausedImage,
-					vacancyTypesImage, vacancyDoctorImage, vacancyNurseImage, candidatesImage,
+					officeImage, officeWindowImage, pauseImage, fromOfficeToHRImage, fromOfficeToAdministrationImage, fromOfficeToRealtorImage,
+					streetImage, hrImage, hrWindowImage, fromHRToOfficeImage, hrNewVacancyImage, hrShowCandidatesImage,
+					administationImage, realtorImage, pausedImage,
+					vacancyTypesImage, vacancyTypesCancelImage, vacancyDoctorImage, vacancyNurseImage, candidatesImage,
 					employeesMaleImage, employeesFemaleImage]) => {
 				this.mainmenuImage = mainmenuImage;
 				this.officeImage = officeImage;
+				this.officeWindowImage = officeWindowImage;
 				this.pauseImage = pauseImage;
 				this.fromOfficeToHRImage = fromOfficeToHRImage;
 				this.fromOfficeToAdministrationImage = fromOfficeToAdministrationImage;
 				this.fromOfficeToRealtorImage = fromOfficeToRealtorImage;
 				this.streetImage = streetImage;
 				this.hrImage = hrImage;
+				this.hrWindowImage = hrWindowImage;
+				this.fromHRToOfficeImage = fromHRToOfficeImage;
+				this.newVacancyImage = hrNewVacancyImage;
+				this.showCandidatesImage = hrShowCandidatesImage;
 				this.administationImage = administationImage;
 				this.realtorImage = realtorImage;
 				this.pausedImage = pausedImage;
 				this.vacancyTypesImage = vacancyTypesImage;
+				this.vacancyTypesCancelImage = vacancyTypesCancelImage;
 				this.vacancyDoctorImage = vacancyDoctorImage;
 				this.vacancyNurseImage = vacancyNurseImage;
 				this.candidatesImage = candidatesImage;
@@ -1605,6 +1785,7 @@ class Game {
 					background: this.officeImage,
 					pauseImage: this.pauseImage,
 					pausedImage: this.pausedImage,
+					windowImage: this.officeWindowImage,
 					goToHRImage: this.fromOfficeToHRImage,
 					goToAdministrationImage: this.fromOfficeToAdministrationImage,
 					goToRealtorImage: this.fromOfficeToRealtorImage,
@@ -1612,7 +1793,12 @@ class Game {
 				const office = new Office(officeImages);
 				const hrImages = {
 					background: this.hrImage,
+					windowImage: this.hrWindowImage,
+					goToOfficeImage: this.fromHRToOfficeImage,
+					newVacancyImage: this.newVacancyImage,
+					showCandidatesImage: this.showCandidatesImage,
 					vacancyTypesImage: this.vacancyTypesImage,
+					vacancyTypesCancelImage: this.vacancyTypesCancelImage,
 					vacancyDoctorImage: this.vacancyDoctorImage,
 					vacancyNurseImage: this.vacancyNurseImage,
 					candidatesImage: this.candidatesImage,
@@ -1672,14 +1858,14 @@ class Game {
 	}
 	handleCanvasMousemove(event) {
 		if (this.isLoading) {
-			console.log(`Mousemove: resources are loading, wait...`);
+			//console.log(`Mousemove: resources are loading, wait...`);
 		} else {
 			const x = event.clientX - this.canvas.getBoundingClientRect().left;
 			const y = event.clientY - this.canvas.getBoundingClientRect().top;
 			if (this.gameStarted) {
 				if (this.isPaused) {
 					if (x >= this.pausedImgX1 && x <= this.pausedImgX2 && y >= this.pausedImgY1 && y <= this.pausedImgY2) {
-						//this.isPaused = false;
+						//
 					}
 				} else {
 					const player = this.players[0];
@@ -1688,6 +1874,8 @@ class Game {
 						case currentLocation instanceof Office:
 							if (currentLocation.pauseBtnCoors.isPointInside(x, y)) {
 								currentLocation.selectedObject = currentLocation.selectingObjects.pause;
+							} else if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
+								currentLocation.selectedObject = currentLocation.selectingObjects.street;
 							} else if (x >= currentLocation.hrDoorCoors.x1 && x <= currentLocation.hrDoorCoors.x2 && y >= currentLocation.hrDoorCoors.y1 && y <= currentLocation.hrDoorCoors.y2) {
 								currentLocation.selectedObject = currentLocation.selectingObjects.hr;
 							} else if (x >= currentLocation.adminDoorCoors.x1 && x <= currentLocation.adminDoorCoors.x2 && y >= currentLocation.adminDoorCoors.y1 && y <= currentLocation.adminDoorCoors.y2) {
@@ -1698,6 +1886,32 @@ class Game {
 								currentLocation.selectedObject = currentLocation.selectingObjects.none;
 							}
 							break;
+						case currentLocation instanceof HR:
+							if (currentLocation.choiceVacancyType) {
+								if (currentLocation.vacancyTypeCoords.buttonCancel.isPointInside(x, y)) {
+									currentLocation.selectedObject = currentLocation.selectingObjects.vacancyCancel;
+								} else {
+									currentLocation.selectedObject = currentLocation.selectingObjects.none;
+								}
+							} else if (currentLocation.showDoctorVacancy) {
+								//
+							} else if (currentLocation.showNurseVacancy) {
+								//
+							} else if (currentLocation.showCandidates) {
+								//
+							} else {
+								if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
+									currentLocation.selectedObject = currentLocation.selectingObjects.street;
+								} else if (x >= currentLocation.officeDoorCoors.x1 && x <= currentLocation.officeDoorCoors.x2 && y >= currentLocation.officeDoorCoors.y1 && y <= currentLocation.officeDoorCoors.y2) {
+									currentLocation.selectedObject = currentLocation.selectingObjects.office;
+								} else if (x >= currentLocation.vacancyCoors.x1 && x <= currentLocation.vacancyCoors.x2 && y >= currentLocation.vacancyCoors.y1 && y <= currentLocation.vacancyCoors.y2) {
+									currentLocation.selectedObject = currentLocation.selectingObjects.vacancy;
+								} else if (x >= currentLocation.candidatesCoors.x1 && x <= currentLocation.candidatesCoors.x2 && y >= currentLocation.candidatesCoors.y1 && y <= currentLocation.candidatesCoors.y2) {
+									currentLocation.selectedObject = currentLocation.selectingObjects.candidates;
+								} else {
+									currentLocation.selectedObject = currentLocation.selectingObjects.none;
+								}
+							}
 						default:
 							break;
 					}
@@ -1748,154 +1962,145 @@ class Game {
 							}
 							break;
 						case currentLocation instanceof HR:
+							currentLocation.selectedObject = currentLocation.selectingObjects.none;
 							if (currentLocation.choiceVacancyType) {
 								if (x >= currentLocation.vacancyTypeCoords.buttonNurse.x1 && x <= currentLocation.vacancyTypeCoords.buttonNurse.x2 && y >= currentLocation.vacancyTypeCoords.buttonNurse.y1 && y <= currentLocation.vacancyTypeCoords.buttonNurse.y2) {
 									console.log('nurse vacancy');
-									player.newVacancy.employeeType = employeeTypes.nurse;
-									player.newVacancy.specialization = '';
-									player.newVacancy.body = {
+									const specialization = '';
+									const body = {
 										chest: 90,
 										waist: 60,
 										hips: 90,
-									},
-									player.newVacancy.experience = 3;
-									player.newVacancy.education = 3;
-									player.newVacancy.salary = 10;
+									};
+									const education = 3;
+									const salary = 10;
+									player.newVacancy = new Vacancy(this.employeeFemalePhotos, employeeTypes.nurse, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = false;
 									currentLocation.showNurseVacancy = true;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonStoreman.x1 && x <= currentLocation.vacancyTypeCoords.buttonStoreman.x2 && y >= currentLocation.vacancyTypeCoords.buttonStoreman.y1 && y <= currentLocation.vacancyTypeCoords.buttonStoreman.y2) {
 									console.log('storeman vacancy');
-									player.newVacancy.employeeType = employeeTypes.storeman;
-									player.newVacancy.specialization = '';
-									player.newVacancy.body = {
+									const specialization = '';
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 0;
-									player.newVacancy.education = 0;
-									player.newVacancy.salary = 5;
+									};
+									const education = 0;
+									const salary = 5;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.storeman, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonTherapist.x1 && x <= currentLocation.vacancyTypeCoords.buttonTherapist.x2 && y >= currentLocation.vacancyTypeCoords.buttonTherapist.y1 && y <= currentLocation.vacancyTypeCoords.buttonTherapist.y2) {
 									console.log('therapist vacancy');
-									player.newVacancy.employeeType = employeeTypes.doctor;
-									player.newVacancy.specialization = doctorSpecializations.therapist;
-									player.newVacancy.body = {
+									const specialization = doctorSpecializations.therapist;
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 1;
-									player.newVacancy.education = 7;
-									player.newVacancy.salary = 13;
+									};
+									const education = 7;
+									const salary = 13;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.doctor, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonDentist.x1 && x <= currentLocation.vacancyTypeCoords.buttonDentist.x2 && y >= currentLocation.vacancyTypeCoords.buttonDentist.y1 && y <= currentLocation.vacancyTypeCoords.buttonDentist.y2) {
 									console.log('dentist vacancy');
-									player.newVacancy.employeeType = employeeTypes.doctor;
-									player.newVacancy.specialization = doctorSpecializations.dentist;
-									player.newVacancy.body = {
+									const specialization = doctorSpecializations.dentist;
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 1;
-									player.newVacancy.education = 7;
-									player.newVacancy.salary = 13;
+									};
+									const education = 7;
+									const salary = 13;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.doctor, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonNeurologist.x1 && x <= currentLocation.vacancyTypeCoords.buttonNeurologist.x2 && y >= currentLocation.vacancyTypeCoords.buttonNeurologist.y1 && y <= currentLocation.vacancyTypeCoords.buttonNeurologist.y2) {
 									console.log('neurologist vacancy');
-									player.newVacancy.employeeType = employeeTypes.doctor;
-									player.newVacancy.specialization = doctorSpecializations.neurologist;
-									player.newVacancy.body = {
+									const specialization = doctorSpecializations.neurologist;
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 1;
-									player.newVacancy.education = 7;
-									player.newVacancy.salary = 13;
+									};
+									const education = 7;
+									const salary = 13;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.doctor, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonSurgeon.x1 && x <= currentLocation.vacancyTypeCoords.buttonSurgeon.x2 && y >= currentLocation.vacancyTypeCoords.buttonSurgeon.y1 && y <= currentLocation.vacancyTypeCoords.buttonSurgeon.y2) {
 									console.log('surgeon vacancy');
-									player.newVacancy.employeeType = employeeTypes.doctor;
-									player.newVacancy.specialization = doctorSpecializations.surgeon;
-									player.newVacancy.body = {
+									const specialization = doctorSpecializations.surgeon;
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 2;
-									player.newVacancy.education = 8;
-									player.newVacancy.salary = 15;
+									};
+									const education = 8;
+									const salary = 15;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.doctor, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonPathologist.x1 && x <= currentLocation.vacancyTypeCoords.buttonPathologist.x2 && y >= currentLocation.vacancyTypeCoords.buttonPathologist.y1 && y <= currentLocation.vacancyTypeCoords.buttonPathologist.y2) {
 									console.log('pathologist vacancy');
-									player.newVacancy.employeeType = employeeTypes.doctor;
-									player.newVacancy.specialization = doctorSpecializations.pathologist;
-									player.newVacancy.body = {
+									const specialization = doctorSpecializations.pathologist;
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 1;
-									player.newVacancy.education = 5;
-									player.newVacancy.salary = 11;
+									};
+									const education = 5;
+									const salary = 11;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.doctor, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonCook.x1 && x <= currentLocation.vacancyTypeCoords.buttonCook.x2 && y >= currentLocation.vacancyTypeCoords.buttonCook.y1 && y <= currentLocation.vacancyTypeCoords.buttonCook.y2) {
 									console.log('cook vacancy');
-									player.newVacancy.employeeType = employeeTypes.cook;
-									player.newVacancy.specialization = '';
-									player.newVacancy.body = {
+									const specialization = '';
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 0;
-									player.newVacancy.education = 1;
-									player.newVacancy.salary = 5;
+									};
+									const education = 1;
+									const salary = 5;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.cook, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonDriver.x1 && x <= currentLocation.vacancyTypeCoords.buttonDriver.x2 && y >= currentLocation.vacancyTypeCoords.buttonDriver.y1 && y <= currentLocation.vacancyTypeCoords.buttonDriver.y2) {
 									console.log('driver vacancy');
-									player.newVacancy.employeeType = employeeTypes.driver;
-									player.newVacancy.specialization = '';
-									player.newVacancy.body = {
+									const specialization = '';
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 1;
-									player.newVacancy.education = 1;
-									player.newVacancy.salary = 6;
+									};
+									const education = 1;
+									const salary = 6;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.driver, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
 								} else if (x >= currentLocation.vacancyTypeCoords.buttonHooligan.x1 && x <= currentLocation.vacancyTypeCoords.buttonHooligan.x2 && y >= currentLocation.vacancyTypeCoords.buttonHooligan.y1 && y <= currentLocation.vacancyTypeCoords.buttonHooligan.y2) {
 									console.log('hooligan vacancy');
-									player.newVacancy.employeeType = employeeTypes.hooligan;
-									player.newVacancy.specialization = '';
-									player.newVacancy.body = {
+									const specialization = '';
+									const body = {
 										chest: 0,
 										waist: 0,
 										hips: 0,
-									},
-									player.newVacancy.experience = 0;
-									player.newVacancy.education = 0;
-									player.newVacancy.salary = 5;
+									};
+									const education = 0;
+									const salary = 5;
+									player.newVacancy = new Vacancy(this.employeeMalePhotos, employeeTypes.hooligan, specialization, body, education, salary);
 									currentLocation.showDoctorVacancy = true;
 									currentLocation.showNurseVacancy = false;
 									currentLocation.choiceVacancyType = false;
@@ -1928,14 +2133,14 @@ class Game {
 									}
 								} else if (x >= currentLocation.vacancyNurseCoords.buttonExperienceMore.x1 && x <= currentLocation.vacancyNurseCoords.buttonExperienceMore.x2 && y >= currentLocation.vacancyNurseCoords.buttonExperienceMore.y1 && y <= currentLocation.vacancyNurseCoords.buttonExperienceMore.y2) {
 									console.log(`Nurse Vacancy: more experience`);
-									if (player.newVacancy.experience < 50) {
+									/*if (player.newVacancy.experience < 50) {
 										player.newVacancy.experience++;
-									}
+									}*/
 								} else if (x >= currentLocation.vacancyNurseCoords.buttonExperienceLess.x1 && x <= currentLocation.vacancyNurseCoords.buttonExperienceLess.x2 && y >= currentLocation.vacancyNurseCoords.buttonExperienceLess.y1 && y <= currentLocation.vacancyNurseCoords.buttonExperienceLess.y2) {
 									console.log(`Nurse Vacancy: less experience`);
-									if (player.newVacancy.experience > 0) {
+									/*if (player.newVacancy.experience > 0) {
 										player.newVacancy.experience--;
-									}
+									}*/
 								} else if (x >= currentLocation.vacancyNurseCoords.buttonChestMore.x1 && x <= currentLocation.vacancyNurseCoords.buttonChestMore.x2 && y >= currentLocation.vacancyNurseCoords.buttonChestMore.y1 && y <= currentLocation.vacancyNurseCoords.buttonChestMore.y2) {
 									console.log(`Nurse Vacancy: more chest`);
 									if (player.newVacancy.body.chest < 140) {
@@ -1966,18 +2171,12 @@ class Game {
 									if (player.newVacancy.body.hips > 75) {
 										player.newVacancy.body.hips--;
 									}
-								} else if (currentLocation.vacancyNurseCoords.buttonOK.isPointInside(x, y)) { //(x >= currentLocation.vacancyNurseCoords.buttonOK.x1 && x <= currentLocation.vacancyNurseCoords.buttonOK.x2 && y >= currentLocation.vacancyNurseCoords.buttonOK.y1 && y <= currentLocation.vacancyNurseCoords.buttonOK.y2) {
+								} else if (currentLocation.vacancyNurseCoords.buttonOK.isPointInside(x, y)) {
 									currentLocation.showNurseVacancy = false;
-									player.publishVacancy(
-										player.newVacancy.employeeType,
-										player.newVacancy.specialization,
-										player.newVacancy.body,
-										player.newVacancy.education,
-										player.newVacancy.salary);
+									player.publishVacancy();
 									console.log(`Nurse Vacancy: ok, publishVacancy ${player.newVacancy.employeeType}`);
 									player.clearNewVacancy();
-									//console.log(`vacancies`,player.vacancies);
-								} else if (currentLocation.vacancyNurseCoords.buttonCancel.isPointInside(x, y)) { //(x >= currentLocation.vacancyNurseCoords.buttonCancel.x1 && x <= currentLocation.vacancyNurseCoords.buttonCancel.x2 && y >= currentLocation.vacancyNurseCoords.buttonCancel.y1 && y <= currentLocation.vacancyNurseCoords.buttonCancel.y2) {
+								} else if (currentLocation.vacancyNurseCoords.buttonCancel.isPointInside(x, y)) {
 									currentLocation.showNurseVacancy = false;
 									console.log(`Nurse Vacancy: cancel`);
 								} else {
@@ -2006,25 +2205,20 @@ class Game {
 									}
 								} else if (x >= currentLocation.vacancyDoctorCoords.buttonExperienceMore.x1 && x <= currentLocation.vacancyDoctorCoords.buttonExperienceMore.x2 && y >= currentLocation.vacancyDoctorCoords.buttonExperienceMore.y1 && y <= currentLocation.vacancyDoctorCoords.buttonExperienceMore.y2) {
 									console.log(`Doctor Vacancy: more experience`);
-									if (player.newVacancy.experience < 50) {
+									/*if (player.newVacancy.experience < 50) {
 										player.newVacancy.experience++;
-									}
+									}*/
 								} else if (x >= currentLocation.vacancyDoctorCoords.buttonExperienceLess.x1 && x <= currentLocation.vacancyDoctorCoords.buttonExperienceLess.x2 && y >= currentLocation.vacancyDoctorCoords.buttonExperienceLess.y1 && y <= currentLocation.vacancyDoctorCoords.buttonExperienceLess.y2) {
 									console.log(`Doctor Vacancy: less experience`);
-									if (player.newVacancy.experience > 0) {
+									/*if (player.newVacancy.experience > 0) {
 										player.newVacancy.experience--;
-									}
-								} else if (currentLocation.vacancyDoctorCoords.buttonOK.isPointInside(x, y)) { //(x >= currentLocation.vacancyDoctorCoords.buttonOK.x1 && x <= currentLocation.vacancyDoctorCoords.buttonOK.x2 && y >= currentLocation.vacancyDoctorCoords.buttonOK.y1 && y <= currentLocation.vacancyDoctorCoords.buttonOK.y2) {
+									}*/
+								} else if (currentLocation.vacancyDoctorCoords.buttonOK.isPointInside(x, y)) {
 									currentLocation.showDoctorVacancy = false;
-									player.publishVacancy(
-										player.newVacancy.employeeType,
-										player.newVacancy.specialization,
-										player.newVacancy.body,
-										player.newVacancy.education,
-										player.newVacancy.salary);
+									player.publishVacancy();
 									console.log(`Doctor Vacancy: ok, publishVacancy ${player.newVacancy.employeeType}`);
 									player.clearNewVacancy();
-								} else if (currentLocation.vacancyDoctorCoords.buttonCancel.isPointInside(x, y)) { //(x >= currentLocation.vacancyDoctorCoords.buttonCancel.x1 && x <= currentLocation.vacancyDoctorCoords.buttonCancel.x2 && y >= currentLocation.vacancyDoctorCoords.buttonCancel.y1 && y <= currentLocation.vacancyDoctorCoords.buttonCancel.y2) {
+								} else if (currentLocation.vacancyDoctorCoords.buttonCancel.isPointInside(x, y)) {
 									currentLocation.showDoctorVacancy = false;
 									console.log(`Doctor Vacancy: cancel`);
 								} else {
@@ -2040,10 +2234,16 @@ class Game {
 								} else if (x >= currentLocation.candidateCoords.buttonNext.x1 && x <= currentLocation.candidateCoords.buttonNext.x2 && y >= currentLocation.candidateCoords.buttonNext.y1 && y <= currentLocation.candidateCoords.buttonNext.y2) {
 									console.log(`showCandidates: next`);
 									player.currentCandidate = player.getNextCandidate();
+								} else if (x >= currentLocation.candidateCoords.buttonHire.isPointInside(x, y)) {
+									console.log(`showCandidates: hire`);
+									if (player.currentCandidate !== null) {
+										player.hireEmployee(this.startTime);
+										currentLocation.showCandidates = false;
+										console.log('player.employees', player.employees);
+									}
 								} else {
 									console.log(`invalid coordinates, still showing candidates`);
 								}
-								//console.log(`player.vacancies`, player.vacancies);
 							} else {
 								if (x >= currentLocation.windowCoors.x1 && x <= currentLocation.windowCoors.x2 && y >= currentLocation.windowCoors.y1 && y <= currentLocation.windowCoors.y2) {
 									player.goToLocation(this.locations.find(loc => loc instanceof Street));
@@ -2136,10 +2336,10 @@ class Game {
 							if (currentLocation.choiceVacancyType) {
 								if (event.key === 'n') {
 									console.log('nurse vacancy');
-									player.newVacancy.employeeType = employeeTypes.nurse;
+									/*player.newVacancy.employeeType = employeeTypes.nurse;
 									player.newVacancy.experience = 3;
 									player.newVacancy.education = 10;
-									player.newVacancy.salary = 100;
+									player.newVacancy.salary = 100;*/
 									currentLocation.showNurseVacancy = true;
 									currentLocation.choiceVacancyType = false;
 								} else if (event.key === 's') {
@@ -2301,6 +2501,7 @@ class Game {
 				});
 				player.updateCandidates();
 				player.updateCurrentCandidate();
+				player.updateEmployees(this.startTime);
 			});
 			this.generateNewClients();
 			//console.log(`${this.time}`);
@@ -2332,19 +2533,36 @@ class Game {
 					if (this.isPaused) {
 						this.ctx.drawImage(currentLocation.pausedImage, this.pausedImgX1, this.pausedImgY1, this.pausedImage.width, this.pausedImage.height);
 					} else {
-						if (currentLocation.selectedObject === currentLocation.selectingObjects.pause) {
-							this.ctx.drawImage(currentLocation.pauseImage, 420, 140, currentLocation.pauseImage.width, currentLocation.pauseImage.height);
-						} else if (currentLocation.selectedObject === currentLocation.selectingObjects.hr) {
-							this.ctx.drawImage(currentLocation.goToHRImage, currentLocation.hrDoorCoors.x1, currentLocation.hrDoorCoors.y1, currentLocation.goToHRImage.width, currentLocation.goToHRImage.height);
-						} else if (currentLocation.selectedObject === currentLocation.selectingObjects.administration) {
-							this.ctx.drawImage(currentLocation.goToAdministrationImage, currentLocation.adminDoorCoors.x1, currentLocation.adminDoorCoors.y1, currentLocation.goToAdministrationImage.width, currentLocation.goToAdministrationImage.height);
-						} else if (currentLocation.selectedObject === currentLocation.selectingObjects.realtor) {
-							this.ctx.drawImage(currentLocation.goToRealtorImage, currentLocation.realtorDoorCoors.x1, currentLocation.realtorDoorCoors.y1, currentLocation.goToRealtorImage.width, currentLocation.goToRealtorImage.height);
+						switch(currentLocation.selectedObject) {
+							case currentLocation.selectingObjects.street:
+								this.ctx.drawImage(currentLocation.windowImage, currentLocation.windowCoors.x1, currentLocation.windowCoors.y1, currentLocation.windowImage.width, currentLocation.windowImage.height);
+								break;
+							case currentLocation.selectingObjects.pause:
+								this.ctx.drawImage(currentLocation.pauseImage, 420, 140, currentLocation.pauseImage.width, currentLocation.pauseImage.height);
+								break;
+							case currentLocation.selectingObjects.hr:
+								this.ctx.drawImage(currentLocation.goToHRImage, currentLocation.hrDoorCoors.x1, currentLocation.hrDoorCoors.y1, currentLocation.goToHRImage.width, currentLocation.goToHRImage.height);
+								break;
+							case currentLocation.selectingObjects.administration:
+								this.ctx.drawImage(currentLocation.goToAdministrationImage, currentLocation.adminDoorCoors.x1, currentLocation.adminDoorCoors.y1, currentLocation.goToAdministrationImage.width, currentLocation.goToAdministrationImage.height);
+								break;
+							case currentLocation.selectingObjects.realtor:
+								this.ctx.drawImage(currentLocation.goToRealtorImage, currentLocation.realtorDoorCoors.x1, currentLocation.realtorDoorCoors.y1, currentLocation.goToRealtorImage.width, currentLocation.goToRealtorImage.height);
+								break;
+							default:
+								break;
 						}
 					}
 				} else if (currentLocation instanceof HR) {
 					if (currentLocation.choiceVacancyType) {
 						this.ctx.drawImage(currentLocation.vacancyTypesImage, 200, 10, this.vacancyTypesImage.width, this.vacancyTypesImage.height);
+						if (currentLocation.selectedObject == currentLocation.selectingObjects.vacancyCancel) {
+							const circularButtonDiameter = currentLocation.vacancyTypeCoords.buttonCancel.radius*2;
+							this.ctx.drawImage(currentLocation.vacancyTypesCancelImage,
+								currentLocation.vacancyTypeCoords.buttonCancel.centerX - currentLocation.vacancyTypeCoords.buttonCancel.radius,
+								currentLocation.vacancyTypeCoords.buttonCancel.centerY - currentLocation.vacancyTypeCoords.buttonCancel.radius,
+								circularButtonDiameter, circularButtonDiameter);
+						}
 					} else if (currentLocation.showDoctorVacancy) {
 						this.ctx.drawImage(currentLocation.vacancyDoctorImage, 200, 100, this.vacancyDoctorImage.width, this.vacancyDoctorImage.height);
 						this.drawNewVacancyText();
@@ -2354,6 +2572,23 @@ class Game {
 					} else if (currentLocation.showCandidates) {
 						this.ctx.drawImage(currentLocation.candidatesImage, 200, 100, this.candidatesImage.width, this.candidatesImage.height);
 						this.drawCandidate();
+					} else {
+						switch(currentLocation.selectedObject) {
+							case currentLocation.selectingObjects.street:
+								this.ctx.drawImage(currentLocation.windowImage, currentLocation.windowCoors.x1, currentLocation.windowCoors.y1, currentLocation.windowImage.width, currentLocation.windowImage.height);
+								break;
+							case currentLocation.selectingObjects.office:
+								this.ctx.drawImage(currentLocation.goToOfficeImage, currentLocation.officeDoorCoors.x1, currentLocation.officeDoorCoors.y1, currentLocation.goToOfficeImage.width, currentLocation.goToOfficeImage.height);
+								break;
+							case currentLocation.selectingObjects.vacancy:
+								this.ctx.drawImage(currentLocation.newVacancyImage, currentLocation.vacancyCoors.x1, currentLocation.vacancyCoors.y1, currentLocation.newVacancyImage.width, currentLocation.newVacancyImage.height);
+								break;
+							case currentLocation.selectingObjects.candidates:
+								this.ctx.drawImage(currentLocation.showCandidatesImage, currentLocation.candidatesCoors.x1, currentLocation.candidatesCoors.y1, currentLocation.showCandidatesImage.width, currentLocation.showCandidatesImage.height);
+								break;
+							default:
+								break;
+						}
 					}
 				}
 			} else {
@@ -2409,43 +2644,22 @@ class Game {
 			x = 10;
 			y = 30;
 		}
-		if (this.players[0].newVacancy) {
-			let vacancy = this.players[0].newVacancy;
+		const player = this.players[0];
+		const vacancy = player.newVacancy;
+		if (!vacancy || vacancy !== null) {
 			const getEmployeeType = function(employeeType) {
-				switch(employeeType) {
-					case employeeTypes.nurse:
-						return 'медсестра';
-					case employeeTypes.doctor:
-						return 'доктор';
-					case employeeTypes.storeman:
-						return 'кладовщик';
-					case employeeTypes.driver:
-						return 'водитель-механик';
-					case employeeTypes.cook:
-						return 'повар';
-					case employeeTypes.hooligan:
-						return 'вышибала';
-					default:
-						return 'unknown';
-				}
+				const foundKey = Object.keys(employeeTypes).find(
+					(key) => employeeTypes[key] === employeeType
+				);
+				return foundKey ? employeeTypes[foundKey] : 'unknown';
 			}
 			let employeeType = getEmployeeType(vacancy.employeeType);
 			if (vacancy.employeeType === employeeTypes.doctor) {
 				const getDoctorSpecialization = function(specialization) {
-					switch(specialization) {
-						case doctorSpecializations.therapist:
-							return 'терапевт';
-						case doctorSpecializations.neurologist:
-							return 'невропатолог';
-						case doctorSpecializations.dentist:
-							return 'стоматолог';
-						case doctorSpecializations.surgeon:
-							return 'хирург';
-						case doctorSpecializations.pathologist:
-							return 'паталогоанатом';
-						default:
-							return 'unknown';
-					}
+					const foundKey = Object.keys(doctorSpecializations).find(
+						(key) => doctorSpecializations[key] === specialization
+					);
+					return foundKey ? doctorSpecializations[foundKey] : 'unknown';
 				}
 				employeeType = getDoctorSpecialization(vacancy.specialization);
 			} else if (vacancy.employeeType === employeeTypes.nurse) {
