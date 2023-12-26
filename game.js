@@ -94,11 +94,11 @@ class Doctor extends Employee {
 	constructor(photo, name, iq, education, salary, specialization, golf) {
 		super(photo, name, iq, education, salary);
 		this.specialization = specialization || 'unknown';
-		this.golf = golf || 0;
+		this.golf = golf;
 
 		//вакансия: iq образование зарплата
 		//кандидат: (тип врача) фото имя, возраст, iq рост вес образование зарплата
-		//приянт: номер фото имя возраст рост вес гольф iq образование опыт стаж мораль зарплата 
+		//принят: номер фото имя возраст рост вес гольф iq образование опыт стаж мораль зарплата 
 		//на работе х часов сегодня
 		//довольство зарплатой
 		//может ли работать сам
@@ -110,9 +110,9 @@ class Doctor extends Employee {
 class Nurse extends Employee {
 	constructor(photo, name, iq, education, salary, body) {
 		super(photo, name, iq, education, salary);
-		this.chest = body.chest || 80; //грудь
-		this.waist = body.waist || 50; //талия
-		this.hips = body.hips || 80; //бёдра
+		this.chest = body.chest; //грудь
+		this.waist = body.waist; //талия
+		this.hips = body.hips; //бёдра
 	}
 	//вакансия - грудь, образование, зарплата
 	//кандидат: фото имя возраст рост вес фигура образование зарплата
@@ -1060,21 +1060,21 @@ class Hospital extends Location {
 	}
 	rent() {
 		if (this.ownership === ownerships.rented) {
-			console.log(`${this.name} already rented.`);
+			console.log(`${this.name} already rented`);
 			return false;
 		} else {
 			this.ownership = ownerships.rented;
-			console.log(`${this.name} rented.`);
+			console.log(`${this.name} rented`);
 			return true;
 		}
 	}
 	buy() {
 		if (this.ownership === ownerships.owned) {
-			console.log(`${this.name} already bought.`);
+			console.log(`${this.name} already bought`);
 			return false;
 		} else {
 			this.ownership = ownerships.owned;
-			console.log(`${this.name} bought.`);
+			console.log(`${this.name} bought`);
 			return true;
 		}
 	}
@@ -1114,6 +1114,14 @@ class WaitingRoom extends Room {
 class TherapistOffice extends Room {
 	constructor() {
 		super('Кабинет терапевта', 7, 6);
+		this.doctor = null;
+		this.nurse = null;
+		this.clients = [];
+	}
+}
+class Stomatology extends Room {
+	constructor() {
+		super('Стоматология', 6, 3);
 		this.doctor = null;
 		this.nurse = null;
 		this.clients = [];
@@ -1246,33 +1254,12 @@ class VacancyStoreman extends Vacancy {
 		super(names, employeePhotos, education, salary);
 		this.liver = liver;
 	}
-	getChanceByAge() {
-		let chance = -0.05;
-		if (this.age < 22) {
-			chance += 0.15;
-		} else if (this.age >= 22 && this.age < 25) {
-			chance += 0.12;
-		} else if (this.age >= 25 && this.age < 30) {
-			chance += 0.1;
-		} else if (this.age >= 30 && this.age < 36) {
-			chance += 0.08;
-		} else if (this.age >= 36 && this.age < 40) {
-			chance -= 0.05;
-		} else {
-			chance -= 0.1;
-		}
-		return chance;
-	}
-	hasChance() {
-		const chanceByAge = this.getChanceByAge();
-		return super.calculateChance(chanceByAge);
-	}
 	generateCandidates() {
 		if (this.candidates.length > 15) {
 			console.warn(`VacancyStoreman: generated ${this.candidates.length} candidates. Will not generate more.`);
 			return;
 		}
-		if (this.hasChance()) {
+		if (this.calculateChance()) {
 			const numCandidates = Math.floor(Math.random() * 4);
 			for (let i = 0; i < numCandidates; i++) {
 				const {photo, name, education, salary, iq} = super.getCommonGeneratedData();
@@ -1290,33 +1277,12 @@ class VacancyCook extends Vacancy {
 		super(names, employeePhotos, education, salary);
 		this.hygiene = hygiene;
 	}
-	getChanceByAge() {
-		let chance = -0.05;
-		if (this.age < 23) {
-			chance -= 0.05;
-		} else if (this.age >= 23 && this.age < 25) {
-			chance += 0.15;
-		} else if (this.age >= 25 && this.age < 30) {
-			chance += 0.12;
-		} else if (this.age >= 30 && this.age < 35) {
-			chance += 0.08;
-		} else if (this.age >= 35 && this.age < 40) {
-			chance += 0.05;
-		} else {
-			chance += 0.1;
-		}
-		return chance;
-	}
-	hasChance() {
-		const chanceByAge = this.getChanceByAge();
-		return super.calculateChance(chanceByAge);
-	}
 	generateCandidates() {
 		if (this.candidates.length > 15) {
 			console.warn(`VacancyCook: generated ${this.candidates.length} candidates. Will not generate more.`);
 			return;
 		}
-		if (this.hasChance()) {
+		if (this.calculateChance()) {
 			const numCandidates = Math.floor(Math.random() * 4);
 			for (let i = 0; i < numCandidates; i++) {
 				const {photo, name, education, salary, iq} = super.getCommonGeneratedData();
@@ -1334,33 +1300,12 @@ class VacancyDriver extends Vacancy {
 		super(names, employeePhotos, education, salary);
 		this.risk = risk;
 	}
-	getChanceByAge() {
-		let chance = -0.05;
-		if (this.age < 25) {
-			chance += 0.15;
-		} else if (this.age >= 25 && this.age < 28) {
-			chance += 0.12;
-		} else if (this.age >= 28 && this.age < 34) {
-			chance += 0.10;
-		} else if (this.age >= 34 && this.age < 40) {
-			chance += 0.09;
-		} else if (this.age >= 40 && this.age < 50) {
-			chance += 0.05;
-		} else {
-			chance += 0.01;
-		}
-		return chance;
-	}
-	hasChance() {
-		const chanceByAge = this.getChanceByAge();
-		return super.calculateChance(chanceByAge);
-	}
 	generateCandidates() {
 		if (this.candidates.length > 15) {
 			console.warn(`VacancyDriver: generated ${this.candidates.length} candidates. Will not generate more.`);
 			return;
 		}
-		if (this.hasChance()) {
+		if (this.calculateChance()) {
 			const numCandidates = Math.floor(Math.random() * 4);
 			for (let i = 0; i < numCandidates; i++) {
 				const {photo, name, education, salary, iq} = super.getCommonGeneratedData();
@@ -1378,33 +1323,12 @@ class VacancyHooligan extends Vacancy {
 		super(names, employeePhotos, education, salary);
 		this.punchLevel = punchLevel;
 	}
-	getChanceByAge() {
-		let chance = -0.05;
-		if (this.age < 21) {
-			chance += 0.16;
-		} else if (this.age >= 21 && this.age < 25) {
-			chance += 0.13;
-		} else if (this.age >= 25 && this.age < 30) {
-			chance += 0.1;
-		} else if (this.age >= 30 && this.age < 35) {
-			chance += 0.08;
-		} else if (this.age >= 35 && this.age < 40) {
-			chance += 0.05;
-		} else {
-			chance -= 0.05;
-		}
-		return chance;
-	}
-	hasChance() {
-		const chanceByAge = this.getChanceByAge();
-		return super.calculateChance(chanceByAge);
-	}
 	generateCandidates() {
 		if (this.candidates.length > 15) {
 			console.warn(`VacancyHooligan: generated ${this.candidates.length} candidates. Will not generate more.`);
 			return;
 		}
-		if (this.hasChance()) {
+		if (this.calculateChance()) {
 			const numCandidates = Math.floor(Math.random() * 4);
 			for (let i = 0; i < numCandidates; i++) {
 				const {photo, name, education, salary, iq} = super.getCommonGeneratedData();
